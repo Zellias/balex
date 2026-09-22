@@ -65,6 +65,11 @@ class BaleClient extends EventEmitter {
 
     this.lastTransactionHash = null;
 
+    // In-memory cache for profiles (LRU bounded, TTL default 5 mins)
+    this._userCache = new Map();
+    this._groupCache = new Map();
+    this._cacheTtlMs = typeof options.cacheTtlMs === 'number' ? options.cacheTtlMs : 300000;
+
     // Relay connection events
     this.connection.on('connected', (info) => {
       if (this.humanize.enabled && this.humanize.keepOnline) {
@@ -99,6 +104,18 @@ class BaleClient extends EventEmitter {
   disconnect() {
     this._stopOnlineHeartbeat();
     this.connection.close();
+  }
+
+  close() {
+    this.disconnect();
+  }
+
+  /**
+   * Clear in-memory user and group caches.
+   */
+  clearCache() {
+    this._userCache.clear();
+    this._groupCache.clear();
   }
 
   // ==========================================
@@ -293,19 +310,57 @@ class BaleClient extends EventEmitter {
   }
 
   /**
-   * Fetch full user profile.
+   * Fetch full user profile (cached with TTL, pass forceRefresh=true to bypass).
    * @param {number} userId
+   * @param {boolean} [forceRefresh=false]
    */
-  async getUser(userId) {
-    return this.users.loadFullUsers({ userIds: [Number(userId)] });
+  async getUser(userId, forceRefresh = false) {
+    const id = Number(userId);
+    const now = Date.now();
+    if (!forceRefresh && this._userCache.has(id)) {
+      const entry = this._userCache.get(id);
+      if (entry.expiresAt > now) {
+        return entry.data;
+      }
+      this._userCache.delete(id);
+    }
+
+    const res = await this.users.loadFullUsers({ userIds: [id] });
+    if (res) {
+      if (this._userCache.size >= 2000) {
+        const oldestKey = this._userCache.keys().next().value;
+        this._userCache.delete(oldestKey);
+      }
+      this._userCache.set(id, { data: res, expiresAt: now + this._cacheTtlMs });
+    }
+    return res;
   }
 
   /**
-   * Fetch full group profile.
+   * Fetch full group profile (cached with TTL, pass forceRefresh=true to bypass).
    * @param {number} groupId
+   * @param {boolean} [forceRefresh=false]
    */
-  async getGroup(groupId) {
-    return this.groups.loadFullGroups({ groupIds: [Number(groupId)] });
+  async getGroup(groupId, forceRefresh = false) {
+    const id = Number(groupId);
+    const now = Date.now();
+    if (!forceRefresh && this._groupCache.has(id)) {
+      const entry = this._groupCache.get(id);
+      if (entry.expiresAt > now) {
+        return entry.data;
+      }
+      this._groupCache.delete(id);
+    }
+
+    const res = await this.groups.loadFullGroups({ groupIds: [id] });
+    if (res) {
+      if (this._groupCache.size >= 2000) {
+        const oldestKey = this._groupCache.keys().next().value;
+        this._groupCache.delete(oldestKey);
+      }
+      this._groupCache.set(id, { data: res, expiresAt: now + this._cacheTtlMs });
+    }
+    return res;
   }
 
   /**

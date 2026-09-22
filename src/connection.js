@@ -123,6 +123,11 @@ class BaleConnection extends EventEmitter {
   }
 
   async _onOpen() {
+    // Disable Nagle's algorithm for minimum frame latency if socket is accessible
+    if (this.ws && this.ws._socket && typeof this.ws._socket.setNoDelay === 'function') {
+      this.ws._socket.setNoDelay(true);
+    }
+
     this.state = 'handshaking';
     this.emit('status', 'handshaking');
 

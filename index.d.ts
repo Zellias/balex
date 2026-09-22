@@ -1294,6 +1294,16 @@ export class BaleClient extends EventEmitter {
    */
   disconnect(): void;
 
+  /**
+   * Alias for disconnect().
+   */
+  close(): void;
+
+  /**
+   * Clear in-memory user and group profile caches.
+   */
+  clearCache(): void;
+
   // ==========================================
   // Authentication Flow
   // ==========================================
@@ -1481,18 +1491,22 @@ export class BaleClient extends EventEmitter {
   leaveGroup(groupId: number | string): Promise<any>;
 
   /**
-   * Retrieve group details by ID.
+   * Retrieve group details by ID (cached with TTL).
+   * @param groupId Group ID
+   * @param forceRefresh Set true to bypass in-memory cache and fetch directly from server
    */
-  getGroup(groupId: number | string): Promise<Group>;
+  getGroup(groupId: number | string, forceRefresh?: boolean): Promise<Group>;
 
   // ==========================================
   // Contacts & Profile Management
   // ==========================================
 
   /**
-   * Fetch full user profile by user ID.
+   * Fetch full user profile by user ID (cached with TTL).
+   * @param userId User ID
+   * @param forceRefresh Set true to bypass in-memory cache and fetch directly from server
    */
-  getUser(userId: number | string): Promise<User>;
+  getUser(userId: number | string, forceRefresh?: boolean): Promise<User>;
 
   /**
    * Fetch user contact list.

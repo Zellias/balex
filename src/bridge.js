@@ -144,7 +144,7 @@ async function handleCommand(req) {
           id,
           success: true,
           result: {
-            clientReady: !!activeClient?.connected,
+            clientReady: !!(activeClient?.isConnected || activeClient?.connected),
             botReady: !!activeBot,
             uptime: process.uptime()
           }

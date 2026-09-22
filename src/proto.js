@@ -59,8 +59,18 @@ const DeviceType = {
 // ==========================================
 
 class ProtoWriter {
-  constructor() {
-    this.chunks = [];
+  constructor(initialCapacity = 512) {
+    this.buffer = Buffer.allocUnsafe(initialCapacity);
+    this.pos = 0;
+  }
+
+  _ensure(bytesNeeded) {
+    if (this.pos + bytesNeeded > this.buffer.length) {
+      const newCap = Math.max(this.buffer.length * 2, this.pos + bytesNeeded + 256);
+      const newBuf = Buffer.allocUnsafe(newCap);
+      this.buffer.copy(newBuf, 0, 0, this.pos);
+      this.buffer = newBuf;
+    }
   }
 
   writeTag(fieldNumber, wireType) {
@@ -71,7 +81,24 @@ class ProtoWriter {
     if (val === undefined || val === null) return;
     if (typeof val === 'number') {
       if (isNaN(val) || !isFinite(val)) return;
-      val = BigInt(Math.floor(val));
+      if (val < 0) {
+        val = BigInt.asUintN(64, BigInt(Math.floor(val)));
+      } else if (val < 0x80) {
+        this._ensure(1);
+        this.buffer[this.pos++] = val;
+        return;
+      } else if (val <= 0xffffffff) {
+        this._ensure(5);
+        let n = val >>> 0;
+        while (n > 0x7f) {
+          this.buffer[this.pos++] = (n & 0x7f) | 0x80;
+          n >>>= 7;
+        }
+        this.buffer[this.pos++] = n;
+        return;
+      } else {
+        val = BigInt(Math.floor(val));
+      }
     } else if (typeof val === 'string') {
       try {
         val = BigInt(val);
@@ -79,9 +106,11 @@ class ProtoWriter {
         return;
       }
     } else if (typeof val === 'boolean') {
-      val = val ? 1n : 0n;
+      this._ensure(1);
+      this.buffer[this.pos++] = val ? 1 : 0;
+      return;
     } else if (typeof val === 'bigint') {
-      // keep bigint
+      // handled below
     } else if (typeof val === 'object') {
       if ('id' in val && typeof val.id === 'number') {
         return this.writeVarint(val.id);
@@ -91,18 +120,15 @@ class ProtoWriter {
       return;
     }
 
-    if (val < 0n) {
-      // 64-bit two's complement for negative integers
-      val = BigInt.asUintN(64, val);
+    if (typeof val === 'bigint') {
+      if (val < 0n) val = BigInt.asUintN(64, val);
+      this._ensure(10);
+      while (val >= 0x80n) {
+        this.buffer[this.pos++] = Number((val & 0x7fn) | 0x80n);
+        val >>= 7n;
+      }
+      this.buffer[this.pos++] = Number(val & 0x7fn);
     }
-
-    const bytes = [];
-    while (val >= 0x80n) {
-      bytes.push(Number((val & 0x7fn) | 0x80n));
-      val >>= 7n;
-    }
-    bytes.push(Number(val & 0x7fn));
-    this.chunks.push(Buffer.from(bytes));
   }
 
   writeUint32(fieldNumber, val) {
@@ -131,10 +157,12 @@ class ProtoWriter {
 
   writeString(fieldNumber, str) {
     if (!str) return;
-    const buf = Buffer.from(str, 'utf8');
+    const byteLen = Buffer.byteLength(str, 'utf8');
     this.writeTag(fieldNumber, WIRE_BYTES);
-    this.writeVarint(buf.length);
-    this.chunks.push(buf);
+    this.writeVarint(byteLen);
+    this._ensure(byteLen);
+    this.buffer.write(str, this.pos, byteLen, 'utf8');
+    this.pos += byteLen;
   }
 
   writeBytes(fieldNumber, buf) {
@@ -142,7 +170,9 @@ class ProtoWriter {
     const b = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
     this.writeTag(fieldNumber, WIRE_BYTES);
     this.writeVarint(b.length);
-    this.chunks.push(b);
+    this._ensure(b.length);
+    b.copy(this.buffer, this.pos);
+    this.pos += b.length;
   }
 
   writeMessage(fieldNumber, subMsgBuf) {
@@ -151,7 +181,7 @@ class ProtoWriter {
   }
 
   finish() {
-    return Buffer.concat(this.chunks);
+    return this.buffer.subarray(0, this.pos);
   }
 }
 
@@ -167,8 +197,13 @@ class ProtoReader {
   }
 
   readVarint() {
-    let result = 0n;
-    let shift = 0n;
+    if (this.pos >= this.len) return 0n;
+    const b0 = this.buf[this.pos++];
+    if ((b0 & 0x80) === 0) {
+      return BigInt(b0);
+    }
+    let result = BigInt(b0 & 0x7f);
+    let shift = 7n;
     while (this.pos < this.len) {
       const byte = this.buf[this.pos++];
       result |= BigInt(byte & 0x7f) << shift;
@@ -180,11 +215,38 @@ class ProtoReader {
     return result;
   }
 
+  readInt32() {
+    return Number(this.readVarint());
+  }
+
+  readInt64() {
+    return this.readVarint();
+  }
+
+  readBool() {
+    return this.readVarint() !== 0n;
+  }
+
   readTag() {
-    const v = Number(this.readVarint());
+    if (this.pos >= this.len) return { fieldNumber: 0, wireType: 0 };
+    const b0 = this.buf[this.pos++];
+    if ((b0 & 0x80) === 0) {
+      return {
+        fieldNumber: b0 >>> 3,
+        wireType: b0 & 0x7
+      };
+    }
+    let val = b0 & 0x7f;
+    let shift = 7;
+    while (this.pos < this.len) {
+      const b = this.buf[this.pos++];
+      val |= (b & 0x7f) << shift;
+      if ((b & 0x80) === 0) break;
+      shift += 7;
+    }
     return {
-      fieldNumber: v >>> 3,
-      wireType: v & 0x7
+      fieldNumber: val >>> 3,
+      wireType: val & 0x7
     };
   }
 
@@ -2299,8 +2361,14 @@ const Proto = {
 
     const w = new ProtoWriter();
     const fields = (schema && schema.fields) ? schema.fields : [];
-    const fieldMap = new Map();
-    for (const f of fields) fieldMap.set(f.name, f);
+    let fieldMap = schema ? schema._fieldMap : null;
+    if (!fieldMap) {
+      fieldMap = new Map();
+      if (schema && schema.fields) {
+        for (const f of schema.fields) fieldMap.set(f.name, f);
+      }
+      if (schema) schema._fieldMap = fieldMap;
+    }
 
     for (const f of fields) {
       const val = obj[f.name];
@@ -2378,11 +2446,15 @@ const Proto = {
     if (!buf || buf.length === 0) return {};
     const r = new ProtoReader(buf);
     const result = {};
-    const tagMap = new Map();
-    if (schema && schema.fields) {
-      for (const f of schema.fields) {
-        tagMap.set(f.tag, f);
+    let tagMap = schema ? schema._tagMap : null;
+    if (!tagMap) {
+      tagMap = new Map();
+      if (schema && schema.fields) {
+        for (const f of schema.fields) {
+          tagMap.set(f.tag, f);
+        }
       }
+      if (schema) schema._tagMap = tagMap;
     }
 
     while (r.hasMore()) {

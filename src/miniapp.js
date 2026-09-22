@@ -81,6 +81,22 @@ const DefaultThemeParams = {
   bottomBarBgColor: '#16181f'
 };
 
+// In-memory cache for HMAC secret keys derived from bot tokens
+const secretKeyCache = new Map();
+
+function getSecretKey(botToken) {
+  let key = secretKeyCache.get(botToken);
+  if (!key) {
+    key = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+    if (secretKeyCache.size >= 1000) {
+      const oldest = secretKeyCache.keys().next().value;
+      secretKeyCache.delete(oldest);
+    }
+    secretKeyCache.set(botToken, key);
+  }
+  return key;
+}
+
 class MiniAppUtils {
   /**
    * Cryptographically sign initData parameters using HMAC-SHA256 according to Telegram/Bale standard.
@@ -98,7 +114,7 @@ class MiniAppUtils {
       throw new Error('botToken is required to sign initData');
     }
 
-    const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+    const secretKey = getSecretKey(botToken);
 
     const pairs = [];
     for (const key of Object.keys(dataObj).sort()) {
@@ -191,7 +207,7 @@ class MiniAppUtils {
 
       pairs.sort();
       const checkString = pairs.join('\n');
-      const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+      const secretKey = getSecretKey(botToken);
       const expectedHash = crypto.createHmac('sha256', secretKey).update(checkString).digest('hex');
 
       if (expectedHash !== hash) {

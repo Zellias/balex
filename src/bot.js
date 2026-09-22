@@ -68,6 +68,23 @@ function buildMultipart(fields = {}, files = {}) {
   };
 }
 
+// Persistent HTTP/HTTPS connection agents with Keep-Alive connection pooling
+const defaultHttpAgent = new http.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 60000,
+  maxSockets: 128,
+  maxFreeSockets: 32,
+  timeout: 60000
+});
+
+const defaultHttpsAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 60000,
+  maxSockets: 128,
+  maxFreeSockets: 32,
+  timeout: 60000
+});
+
 /**
  * Main BaleBot Client Class
  */
@@ -77,6 +94,8 @@ class BaleBot extends EventEmitter {
    * @param {Object} [options]
    * @param {string} [options.baseUrl="https://tapi.bale.ai"] - Bale Bot API base URL
    * @param {number} [options.timeout=30000] - Request timeout in ms
+   * @param {http.Agent} [options.httpAgent] - Custom HTTP Agent
+   * @param {https.Agent} [options.httpsAgent] - Custom HTTPS Agent
    */
   constructor(token, options = {}) {
     super();
@@ -87,6 +106,8 @@ class BaleBot extends EventEmitter {
     this.token = token.trim();
     this.baseUrl = (options.baseUrl || "https://tapi.bale.ai").replace(/\/+$/, "");
     this.timeout = options.timeout || 30000;
+    this.httpAgent = options.httpAgent || defaultHttpAgent;
+    this.httpsAgent = options.httpsAgent || defaultHttpsAgent;
 
     // Polling state
     this._isPolling = false;
@@ -141,18 +162,39 @@ class BaleBot extends EventEmitter {
       headers["Content-Length"] = body.length;
     }
 
-    const transport = url.protocol === "http:" ? http : https;
+    const isHttp = url.protocol === "http:";
+    const transport = isHttp ? http : https;
+    const agent = isHttp ? this.httpAgent : this.httpsAgent;
 
     return new Promise((resolve, reject) => {
       const req = transport.request(url, {
         method: "POST",
         headers,
+        agent,
         timeout: this.timeout
       }, (res) => {
-        const chunks = [];
-        res.on("data", (chunk) => chunks.push(chunk));
+        let singleChunk = null;
+        let chunks = null;
+        let totalLength = 0;
+
+        res.on("data", (chunk) => {
+          if (!singleChunk && !chunks) {
+            singleChunk = chunk;
+          } else {
+            if (!chunks) {
+              chunks = [singleChunk, chunk];
+            } else {
+              chunks.push(chunk);
+            }
+          }
+          totalLength += chunk.length;
+        });
+
         res.on("end", () => {
-          const rawText = Buffer.concat(chunks).toString("utf8");
+          const rawText = !chunks
+            ? (singleChunk ? singleChunk.toString("utf8") : "")
+            : Buffer.concat(chunks, totalLength).toString("utf8");
+
           try {
             const data = JSON.parse(rawText);
             if (data.ok) {
@@ -607,19 +649,24 @@ class BaleBot extends EventEmitter {
       filePath = fileObj.file_path;
     }
 
-    const downloadUrl = new URL(this.getFileUrl(filePath));
-    const transport = downloadUrl.protocol === "http:" ? http : https;
+    const isHttp = downloadUrl.protocol === "http:";
+    const transport = isHttp ? http : https;
+    const agent = isHttp ? this.httpAgent : this.httpsAgent;
 
     return new Promise((resolve, reject) => {
-      transport.get(downloadUrl, (res) => {
+      transport.get(downloadUrl, { agent }, (res) => {
         if (res.statusCode !== 200) {
           return reject(new Error(`Failed to download file from Bale: HTTP ${res.statusCode}`));
         }
 
         const chunks = [];
-        res.on("data", (chunk) => chunks.push(chunk));
+        let totalLength = 0;
+        res.on("data", (chunk) => {
+          chunks.push(chunk);
+          totalLength += chunk.length;
+        });
         res.on("end", () => {
-          const buffer = Buffer.concat(chunks);
+          const buffer = Buffer.concat(chunks, totalLength);
           if (destinationPath) {
             fs.writeFileSync(destinationPath, buffer);
             resolve(destinationPath);
