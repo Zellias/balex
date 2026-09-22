@@ -358,22 +358,26 @@ class BaleBot extends EventEmitter {
   handleUpdate(update) {
     if (!update || typeof update !== "object") return;
 
-    this.emit("update", update);
+    try {
+      this.emit("update", update);
 
-    if (update.message) {
-      this.emit("message", update.message);
-      if (update.message.successful_payment) {
-        this.emit("successful_payment", update.message.successful_payment, update.message);
+      if (update.message) {
+        this.emit("message", update.message);
+        if (update.message.successful_payment) {
+          this.emit("successful_payment", update.message.successful_payment, update.message);
+        }
       }
-    }
-    if (update.edited_message) {
-      this.emit("edited_message", update.edited_message);
-    }
-    if (update.callback_query) {
-      this.emit("callback_query", update.callback_query);
-    }
-    if (update.pre_checkout_query) {
-      this.emit("pre_checkout_query", update.pre_checkout_query);
+      if (update.edited_message) {
+        this.emit("edited_message", update.edited_message);
+      }
+      if (update.callback_query) {
+        this.emit("callback_query", update.callback_query);
+      }
+      if (update.pre_checkout_query) {
+        this.emit("pre_checkout_query", update.pre_checkout_query);
+      }
+    } catch (err) {
+      this.emit("error", err);
     }
   }
 
