@@ -1074,25 +1074,34 @@ export class MiniAppUtils {
 
 export abstract class Session {
   token: string | null;
+  userId: number | null;
   uid: number | null;
   user: User | null;
-  deviceHash: Buffer;
+  deviceHash: string;
   phone: string | null;
   constructor();
-  save(): string;
-  load(data: string): void;
+  isLoggedIn(): boolean;
+  clear(): void;
+  save(): any;
+  load(data?: any): void;
+  toJSON(): Record<string, any>;
+  fromJSON(data: Record<string, any>): void;
+  exportString(): string;
 }
 
 export class StringSession extends Session {
   constructor(sessionString?: string);
   save(): string;
   load(sessionString: string): void;
+  exportString(): string;
 }
 
 export class FileSession extends Session {
-  constructor(filePath: string);
-  save(): string;
-  load(filePath: string): void;
+  filePath: string;
+  constructor(filePath?: string);
+  save(): void;
+  load(filePath?: string): void;
+  exportString(): string;
 }
 
 export class BaleConnection extends EventEmitter {

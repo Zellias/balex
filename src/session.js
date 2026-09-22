@@ -46,11 +46,18 @@ class Session {
   }
 
   toJSON() {
+    let userCopy = this.user;
+    if (this.user && typeof this.user === 'object') {
+      userCopy = { ...this.user };
+      if (typeof userCopy.accessHash === 'bigint') {
+        userCopy.accessHash = userCopy.accessHash.toString();
+      }
+    }
     return {
       token: this.token,
       userId: this.userId,
       phone: this.phone,
-      user: this.user,
+      user: userCopy,
       deviceHash: this.deviceHash
     };
   }
@@ -60,8 +67,22 @@ class Session {
     if (data.token) this.token = data.token;
     if (data.userId) this.userId = data.userId;
     if (data.phone) this.phone = data.phone;
-    if (data.user) this.user = data.user;
+    if (data.user) {
+      this.user = Object.assign({}, data.user);
+      if (this.user.accessHash !== undefined && typeof this.user.accessHash === 'string') {
+        try {
+          this.user.accessHash = BigInt(this.user.accessHash);
+        } catch (_) {}
+      }
+    }
     if (data.deviceHash) this.deviceHash = data.deviceHash;
+  }
+
+  exportString() {
+    const json = JSON.stringify(this.toJSON(), (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    );
+    return Buffer.from(json, 'utf8').toString('base64');
   }
 }
 
@@ -84,11 +105,6 @@ class StringSession extends Session {
 
   save() {
     return this.exportString();
-  }
-
-  exportString() {
-    const json = JSON.stringify(this.toJSON());
-    return Buffer.from(json, 'utf8').toString('base64');
   }
 }
 
@@ -116,7 +132,12 @@ class FileSession extends Session {
 
   save() {
     try {
-      fs.writeFileSync(this.filePath, JSON.stringify(this.toJSON(), null, 2), 'utf8');
+      const json = JSON.stringify(
+        this.toJSON(),
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        2
+      );
+      fs.writeFileSync(this.filePath, json, 'utf8');
     } catch (e) {
       console.warn(`Could not save session file ${this.filePath}:`, e.message);
     }
