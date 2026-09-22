@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { BaleClient, Proto, PeerType, TypingType } = require('../index');
+const { BaleClient, Proto, PeerType, ExPeerType, TypingType, ReportKind, PeerSource } = require('../index');
 
 async function runTests() {
   const { ProtoWriter } = Proto;
@@ -50,6 +50,37 @@ async function runTests() {
   const unblockBuf = Proto.encodeUnblockUser(99999);
   assert(Buffer.isBuffer(unblockBuf) && unblockBuf.length > 0, 'encodeUnblockUser failed');
   console.log('  ✅ Profile & Privacy Encoders passed');
+
+  // 3b. Reporting & Anti-Abuse Wire Encoders
+  const reportPeerBuf = Proto.encodeReportInappropriateContent({
+    report: {
+      kind: ReportKind.SPAM,
+      description: 'مزاحمت و ارسال پیام مکرر',
+      peerReport: {
+        source: PeerSource.DIALOGS,
+        peer: { type: ExPeerType.PRIVATE, id: 123456, accessHash: 987654n }
+      }
+    }
+  });
+  assert(Buffer.isBuffer(reportPeerBuf) && reportPeerBuf.length > 0, 'encodeReportInappropriateContent (peer) failed');
+
+  const reportMsgBuf = Proto.encodeReportInappropriateContent({
+    report: {
+      kind: ReportKind.SCAM,
+      description: 'لینک فیشینگ و کلاهبرداری',
+      messageReport: {
+        peer: { type: ExPeerType.PRIVATE, id: 123456, accessHash: 987654n },
+        mids: [10001, 10002]
+      }
+    }
+  });
+  assert(Buffer.isBuffer(reportMsgBuf) && reportMsgBuf.length > 0, 'encodeReportInappropriateContent (messages) failed');
+
+  const reportDismissBuf = Proto.encodeReportDismiss({
+    exPeer: { type: ExPeerType.PRIVATE, id: 123456, accessHash: 987654n }
+  });
+  assert(Buffer.isBuffer(reportDismissBuf) && reportDismissBuf.length > 0, 'encodeReportDismiss failed');
+  console.log('  ✅ Reporting & Anti-Abuse Wire Encoders passed');
 
   // 4. Reactions Encoders
   const setReactionBuf = Proto.encodeMessageSetReaction({
@@ -224,6 +255,25 @@ async function runTests() {
   await client.sendInlineCallback(500, 789, 'action:confirm');
   assert(sentRequests.some(r => r.service === 'bale.ketf.v1.Ketf' && r.method === 'SendInlineCallback'));
 
+  // Reporting & Anti-Abuse
+  await client.reportPeer(556677, ReportKind.SPAM, 'مزاحمت');
+  assert(sentRequests.some(r => r.service === 'bale.report.v1.Report' && r.method === 'ReportInappropriateContent'));
+
+  await client.reportUser(556677, ReportKind.SCAM, 'کلاهبرداری');
+  assert(sentRequests.some(r => r.service === 'bale.report.v1.Report' && r.method === 'ReportInappropriateContent'));
+
+  await client.reportGroup(998877, ReportKind.INAPPROPRIATE_CONTENT, 'محتوای نامناسب');
+  assert(sentRequests.some(r => r.service === 'bale.report.v1.Report' && r.method === 'ReportInappropriateContent'));
+
+  await client.reportMessages(556677, [1234, 5678], ReportKind.VIOLENCE, 'خشونت');
+  assert(sentRequests.some(r => r.service === 'bale.report.v1.Report' && r.method === 'ReportInappropriateContent'));
+
+  await client.reportStory([9911, 9922], ReportKind.FALSE_INFORMATION, 'اخبار جعلی');
+  assert(sentRequests.some(r => r.service === 'bale.report.v1.Report' && r.method === 'ReportInappropriateContent'));
+
+  await client.dismissReport(556677);
+  assert(sentRequests.some(r => r.service === 'bale.report.v1.Report' && r.method === 'ReportDismiss'));
+
   // Gift Packets (Cash & Gold)
   await client.sendGiftPacket({ peer: 500, amount: 500000, count: 5, message: 'عیدی نوروز' });
   assert(sentRequests.some(r => r.service === 'bale.giftpacket.v1.GiftPacket' && r.method === 'SendGiftPacketWithWallet'));
@@ -331,6 +381,7 @@ async function runTests() {
     assert(typeof msg.delete === 'function');
     assert(typeof msg.pin === 'function');
     assert(typeof msg.forwardTo === 'function');
+    assert(typeof msg.report === 'function');
     assert(typeof msg.openGiftPacket === 'function');
     assert(typeof msg.openGoldGiftPacket === 'function');
     assert(msg.isGiftPacket === false);

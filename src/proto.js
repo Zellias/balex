@@ -54,6 +54,24 @@ const DeviceType = {
   TABLET: 4
 };
 
+const ReportKind = {
+  UNKNOWN: 0,
+  SCAM: 1,
+  INAPPROPRIATE_CONTENT: 2,
+  OTHER: 3,
+  VIOLENCE: 4,
+  SPAM: 5,
+  FALSE_INFORMATION: 6
+};
+
+const PeerSource = {
+  UNKNOWN: 0,
+  DIALOGS: 1,
+  VITRINE: 2,
+  MARKET: 3,
+  PRIVACY_BAR: 4
+};
+
 // ==========================================
 // Low-Level Protobuf Writer & Reader
 // ==========================================
@@ -2354,6 +2372,101 @@ const Proto = {
     return w.finish();
   },
 
+  encodeExPeer({ type = ExPeerType.PRIVATE, id = 0, accessHash = 0n } = {}) {
+    const w = new ProtoWriter();
+    w.writeInt32(1, type);
+    w.writeInt32(2, Number(id));
+    if (accessHash) {
+      w.writeInt64(3, BigInt(accessHash));
+    }
+    return w.finish();
+  },
+
+  decodeExPeer(buf) {
+    const r = new ProtoReader(buf);
+    const p = { type: 0, id: 0, accessHash: 0n };
+    while (r.hasMore()) {
+      const { fieldNumber, wireType } = r.readTag();
+      if (fieldNumber === 1) p.type = Number(r.readVarint());
+      else if (fieldNumber === 2) p.id = Number(r.readVarint());
+      else if (fieldNumber === 3) p.accessHash = r.readVarint();
+      else r.skip(wireType);
+    }
+    return p;
+  },
+
+  encodeReportInappropriateContent(req = {}) {
+    const w = new ProtoWriter();
+    const report = req.report || req;
+    const rw = new ProtoWriter();
+
+    if (report.kind !== undefined && report.kind !== null) {
+      rw.writeInt32(1, Number(report.kind));
+    }
+    if (report.description) {
+      rw.writeString(2, String(report.description));
+    }
+
+    if (report.peerReport) {
+      const pw = new ProtoWriter();
+      if (report.peerReport.source !== undefined) {
+        pw.writeInt32(1, Number(report.peerReport.source));
+      }
+      if (report.peerReport.peer) {
+        pw.writeMessage(2, Proto.encodeExPeer(report.peerReport.peer));
+      }
+      rw.writeMessage(101, pw.finish());
+    }
+
+    if (report.messageReport) {
+      const mw = new ProtoWriter();
+      if (report.messageReport.peer) {
+        mw.writeMessage(1, Proto.encodeExPeer(report.messageReport.peer));
+      }
+      if (Array.isArray(report.messageReport.mids)) {
+        for (const mid of report.messageReport.mids) {
+          const midw = new ProtoWriter();
+          if (typeof mid === 'object' && mid !== null) {
+            if (mid.date) midw.writeInt64(1, BigInt(mid.date));
+            if (mid.rid || mid.randomId) midw.writeInt64(2, BigInt(mid.rid || mid.randomId));
+            if (mid.seq) midw.writeInt64(3, BigInt(mid.seq));
+          } else if (typeof mid === 'string' || typeof mid === 'number' || typeof mid === 'bigint') {
+            midw.writeInt64(2, BigInt(mid));
+          }
+          mw.writeMessage(2, midw.finish());
+        }
+      }
+      rw.writeMessage(102, mw.finish());
+    }
+
+    if (report.storyReport) {
+      const sw = new ProtoWriter();
+      const sids = Array.isArray(report.storyReport.storyId)
+        ? report.storyReport.storyId
+        : (report.storyReport.storyIds || (report.storyReport.storyId ? [report.storyReport.storyId] : []));
+      for (const sid of sids) {
+        if (sid !== undefined && sid !== null) {
+          const sidw = new ProtoWriter();
+          sidw.writeInt64(1, BigInt(sid));
+          sw.writeMessage(1, sidw.finish());
+        }
+      }
+      rw.writeMessage(103, sw.finish());
+    }
+
+    w.writeMessage(1, rw.finish());
+    return w.finish();
+  },
+
+  encodeReportDismiss(req = {}) {
+    const w = new ProtoWriter();
+    const exPeer = req.exPeer || req.peer || req;
+    if (exPeer) {
+      w.writeMessage(2, Proto.encodeExPeer(exPeer));
+    }
+    return w.finish();
+  },
+
   encodeBySchema(obj, schema) {
     if (!obj) return Buffer.alloc(0);
     if (Buffer.isBuffer(obj)) return obj;
@@ -2540,6 +2653,8 @@ Proto.ProtoWriter = ProtoWriter;
 Proto.ProtoReader = ProtoReader;
 Proto.TypingType = TypingType;
 Proto.DeviceType = DeviceType;
+Proto.ReportKind = ReportKind;
+Proto.PeerSource = PeerSource;
 
 module.exports = {
   Proto,
@@ -2548,5 +2663,7 @@ module.exports = {
   PeerType,
   ExPeerType,
   TypingType,
-  DeviceType
+  DeviceType,
+  ReportKind,
+  PeerSource
 };

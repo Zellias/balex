@@ -29,6 +29,8 @@ const expectedExports = [
   "ExPeerType",
   "TypingType",
   "DeviceType",
+  "ReportKind",
+  "PeerSource",
   "Session",
   "StringSession",
   "FileSession",
@@ -82,7 +84,7 @@ console.log("  ✅ All " + botMethodNames.length + " BaleBot methods verified in
 // 5. Verify MessageEvent helper methods in index.d.ts
 const msgMethods = [
   "reply", "replyPhoto", "replyVoice", "replyAudio", "replyVideo", "replyDocument",
-  "edit", "react", "delete", "pin", "forwardTo",
+  "edit", "react", "delete", "pin", "forwardTo", "report",
   "openGiftPacket", "claimGiftPacket", "getGiftPacket", "getGiftPacketReceivers",
   "openGoldGiftPacket", "claimGoldGiftPacket", "getGoldWinners"
 ];
@@ -95,10 +97,13 @@ console.log("  ✅ All " + msgMethods.length + " MessageEvent methods verified i
 // 6. Verify Enums and Constant Structures
 assert.strictEqual(index.PeerType.PRIVATE, 1);
 assert.strictEqual(index.PeerType.GROUP, 2);
+assert.strictEqual(index.ReportKind.SPAM, 5);
+assert.strictEqual(index.ReportKind.SCAM, 1);
+assert.strictEqual(index.PeerSource.DIALOGS, 1);
 assert.strictEqual(index.ScreenMode.FULLSCREEN, 0);
 assert.strictEqual(index.MiniAppEvent.READY, "web_app_ready");
 assert.strictEqual(index.DefaultThemeParams.bgColor, "#16181f");
-console.log("  ✅ Enums (PeerType, ExPeerType, TypingType, DeviceType, ScreenMode, MiniAppEvent) match");
+console.log("  ✅ Enums (PeerType, ExPeerType, TypingType, DeviceType, ReportKind, PeerSource, ScreenMode, MiniAppEvent) match");
 
 // 7. Verify MiniAppUtils API methods in index.d.ts
 const miniAppMethods = ["createInitData", "signInitData", "validateInitData", "parseInitData", "buildMiniAppUrl"];

@@ -5,11 +5,27 @@
 
 const EventEmitter = require('events');
 const crypto = require('crypto');
-const { Proto, PeerType, ExPeerType, TypingType, DeviceType } = require('./proto');
+const { Proto, PeerType, ExPeerType, TypingType, DeviceType, ReportKind, PeerSource } = require('./proto');
 const { BaleConnection } = require('./connection');
 const { Session, StringSession, FileSession } = require('./session');
 const { MiniAppUtils, ScreenMode, MiniAppEvent, DefaultThemeParams } = require('./miniapp');
 const servicesCatalog = require('./generated/services.json');
+
+/**
+ * Helper to normalize a peer into ExPeer representation { type, id, accessHash }
+ * @param {number|string|Object} peer
+ * @returns {{ type: number, id: number, accessHash: bigint }}
+ */
+function normalizeExPeer(peer) {
+  if (!peer) return { type: ExPeerType.UNKNOWN, id: 0, accessHash: 0n };
+  if (typeof peer === 'number' || typeof peer === 'string') {
+    return { type: ExPeerType.PRIVATE, id: Number(peer), accessHash: 0n };
+  }
+  const type = peer.type !== undefined ? peer.type : ExPeerType.PRIVATE;
+  const id = peer.id !== undefined ? Number(peer.id) : 0;
+  const accessHash = peer.accessHash ? BigInt(peer.accessHash) : 0n;
+  return { type, id, accessHash };
+}
 
 class BaleClient extends EventEmitter {
   constructor(options = {}) {
@@ -972,6 +988,106 @@ class BaleClient extends EventEmitter {
   }
 
   // ==========================================
+  // Reporting & Anti-Abuse (bale.report.v1.Report)
+  // ==========================================
+
+  /**
+   * Report an inappropriate peer (user, group, channel) for scam, spam, violence, etc.
+   * @param {number|Object} peer - Peer ID or { type, id, accessHash }
+   * @param {number} [kind=ReportKind.SPAM] - ReportKind enum value
+   * @param {string} [description=""] - Optional explanation
+   * @param {number} [source=PeerSource.DIALOGS] - PeerSource enum value
+   */
+  async reportPeer(peer, kind = ReportKind.SPAM, description = '', source = PeerSource.DIALOGS) {
+    const exPeer = normalizeExPeer(peer);
+    const payload = Proto.encodeReportInappropriateContent({
+      report: {
+        kind,
+        description,
+        peerReport: {
+          source,
+          peer: exPeer
+        }
+      }
+    });
+    return this.connection.sendRequest('bale.report.v1.Report', 'ReportInappropriateContent', payload);
+  }
+
+  /**
+   * Report a user for spam or inappropriate conduct.
+   * @param {number|string} userId
+   * @param {number} [kind=ReportKind.SPAM]
+   * @param {string} [description=""]
+   * @param {number} [source=PeerSource.DIALOGS]
+   */
+  async reportUser(userId, kind = ReportKind.SPAM, description = '', source = PeerSource.DIALOGS) {
+    return this.reportPeer({ type: ExPeerType.PRIVATE, id: Number(userId) }, kind, description, source);
+  }
+
+  /**
+   * Report a group chat for inappropriate content or spam.
+   * @param {number|string} groupId
+   * @param {number} [kind=ReportKind.SPAM]
+   * @param {string} [description=""]
+   */
+  async reportGroup(groupId, kind = ReportKind.SPAM, description = '') {
+    return this.reportPeer({ type: ExPeerType.GROUP, id: Number(groupId) }, kind, description, PeerSource.DIALOGS);
+  }
+
+  /**
+   * Report specific message(s) within a chat.
+   * @param {number|Object} peer - Peer ID or { type, id }
+   * @param {Array<string|number>|string|number} mids - Message ID(s)
+   * @param {number} [kind=ReportKind.SPAM]
+   * @param {string} [description=""]
+   */
+  async reportMessages(peer, mids = [], kind = ReportKind.SPAM, description = '') {
+    const exPeer = normalizeExPeer(peer);
+    const ids = Array.isArray(mids) ? mids : [mids];
+    const payload = Proto.encodeReportInappropriateContent({
+      report: {
+        kind,
+        description,
+        messageReport: {
+          peer: exPeer,
+          mids: ids
+        }
+      }
+    });
+    return this.connection.sendRequest('bale.report.v1.Report', 'ReportInappropriateContent', payload);
+  }
+
+  /**
+   * Report an inappropriate story.
+   * @param {string|number|Array<string|number>} storyIds
+   * @param {number} [kind=ReportKind.SPAM]
+   * @param {string} [description=""]
+   */
+  async reportStory(storyIds, kind = ReportKind.SPAM, description = '') {
+    const ids = Array.isArray(storyIds) ? storyIds : [storyIds];
+    const payload = Proto.encodeReportInappropriateContent({
+      report: {
+        kind,
+        description,
+        storyReport: {
+          storyId: ids
+        }
+      }
+    });
+    return this.connection.sendRequest('bale.report.v1.Report', 'ReportInappropriateContent', payload);
+  }
+
+  /**
+   * Dismiss a report alert or banner for a peer.
+   * @param {number|Object} peer
+   */
+  async dismissReport(peer) {
+    const exPeer = normalizeExPeer(peer);
+    const payload = Proto.encodeReportDismiss({ exPeer });
+    return this.connection.sendRequest('bale.report.v1.Report', 'ReportDismiss', payload);
+  }
+
+  // ==========================================
   // Reactions API (Abacus)
   // ==========================================
 
@@ -1710,6 +1826,7 @@ class BaleClient extends EventEmitter {
         delete: () => this.deleteMessages(msgData.peer, [msgData.randomId]),
         pin: () => this.pinMessage(msgData.peer, msgData.randomId),
         forwardTo: (toPeer) => this.forwardMessages(toPeer, msgData.peer, [msgData.randomId]),
+        report: (kind = ReportKind.SPAM, description = '') => this.reportMessages(msgData.peer, [msgData.randomId], kind, description),
         openGiftPacket: (walletId) => this.openGiftPacket({ peer: msgData.peer, randomId: msgData.randomId, date: msgData.date, walletId }),
         claimGiftPacket: (walletId) => this.openGiftPacket({ peer: msgData.peer, randomId: msgData.randomId, date: msgData.date, walletId }),
         getGiftPacket: () => this.getGiftPacket({ peer: msgData.peer, randomId: msgData.randomId, date: msgData.date }),

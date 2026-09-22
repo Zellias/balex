@@ -6,7 +6,7 @@
  */
 
 const { BaleClient } = require('./src/client');
-const { Proto, PeerType, ExPeerType, TypingType, DeviceType, ProtoWriter, ProtoReader } = require('./src/proto');
+const { Proto, PeerType, ExPeerType, TypingType, DeviceType, ReportKind, PeerSource, ProtoWriter, ProtoReader } = require('./src/proto');
 const { Session, StringSession, FileSession } = require('./src/session');
 const { BaleConnection } = require('./src/connection');
 const { MiniAppUtils, ScreenMode, MiniAppEvent, DefaultThemeParams } = require('./src/miniapp');
@@ -28,6 +28,8 @@ module.exports = {
   ExPeerType,
   TypingType,
   DeviceType,
+  ReportKind,
+  PeerSource,
   Session,
   StringSession,
   FileSession,

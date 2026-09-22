@@ -517,16 +517,17 @@ All 62 official methods from `https://docs.bale.ai/` are natively available on `
 
 
 ### 10.4 Complete List of 106 High-Level BaleClient Methods
-All 106 convenience methods on `BaleClient` provide zero-wire overhead access to Bale features:
+All 114 convenience methods on `BaleClient` provide zero-wire overhead access to Bale features:
 
 | Category | High-Level Methods |
 | :--- | :--- |
-| **Authentication & Session** | `connect()`, `disconnect()`, `sendCode(phone)`, `signIn(code, hash)`, `signInWithPassword(pass, hash)`, `logout()`, `isConnected`, `me` |
+| **Authentication & Session** | `connect()`, `disconnect()`, `close()`, `clearCache()`, `sendCode(phone)`, `signIn(code, hash)`, `signInWithPassword(pass, hash)`, `logout()`, `isConnected`, `me` |
 | **Messaging & History** | `sendMessage(peer, text, opts)`, `sendTextMessage(peerId, text, isGroup)`, `forwardMessages(toPeer, fromPeer, mids, opts)`, `editMessage(peer, msgId, text)`, `pinMessage(peer, msgId)`, `deleteMessages(peer, mids)`, `clearChat(peer)`, `loadDialogs(limit, endDate)`, `loadHistory(peer, limit, date)`, `markAsReceived(peer, date)`, `markAsRead(peer, date)` |
 | **Media & Files** | `sendPhoto(peer, photo, opts)`, `sendVoice(peer, voice, opts)`, `sendAudio(peer, audio, opts)`, `sendVideo(peer, video, opts)`, `sendDocument(peer, doc, opts)`, `sendSticker(peer, stickerId, hash, packId)` |
-| **Groups** | `createGroup(title, userIds)`, `getGroup(groupId)`, `inviteMembers(groupId, userIds)`, `kickMember(groupId, userId)`, `setGroupTitle(groupId, title)`, `leaveGroup(groupId)` |
-| **Contacts & Users** | `getUser(userId)`, `getContacts()`, `importContacts(contacts)`, `addContact(phone, name)`, `addContactByUid(uid, hash)`, `removeContact(uid, hash)`, `searchContacts(query)` |
+| **Groups** | `createGroup(title, userIds)`, `getGroup(groupId, forceRefresh)`, `inviteMembers(groupId, userIds)`, `kickMember(groupId, userId)`, `setGroupTitle(groupId, title)`, `leaveGroup(groupId)` |
+| **Contacts & Users** | `getUser(userId, forceRefresh)`, `getContacts()`, `importContacts(contacts)`, `addContact(phone, name)`, `addContactByUid(uid, hash)`, `removeContact(uid, hash)`, `searchContacts(query)` |
 | **Profile & Privacy** | `editName(name)`, `editAbout(about)`, `editUsername(username)`, `checkUsername(username)`, `blockUser(userId)`, `unblockUser(userId)`, `loadBlockedUsers()` |
+| **Reporting & Anti-Abuse** | `reportPeer(peer, kind, desc, src)`, `reportUser(userId, kind, desc)`, `reportGroup(groupId, kind, desc)`, `reportMessages(peer, mids, kind, desc)`, `reportStory(storyIds, kind, desc)`, `dismissReport(peer)`, `msg.report(kind, desc)` |
 | **Reactions & Folders** | `setReaction(peer, msgId, emoji)`, `removeReaction(peer, msgId, emoji)`, `getReactions(peer, msgIds)`, `loadFolders()`, `createFolder(title, peers)`, `deleteFolder(folderId)` |
 | **Polls & Quizzes** | `sendPoll(peer, question, opts, cfg)`, `createPoll(question, opts, cfg)`, `getPollResults(pollId)`, `closePoll(pollId)` |
 | **Cash Gift Packets** | `sendGiftPacket(options)`, `openGiftPacket(options)`, `claimGiftPacket(options)`, `getGiftPacketReceivers(options)`, `getGiftPacketPaymentToken(options)` |

@@ -55,6 +55,39 @@ export enum DeviceType {
 }
 
 /**
+ * Report abuse category for inappropriate content or malicious activity.
+ */
+export enum ReportKind {
+  UNKNOWN = 0,
+  SCAM = 1,
+  INAPPROPRIATE_CONTENT = 2,
+  OTHER = 3,
+  VIOLENCE = 4,
+  SPAM = 5,
+  FALSE_INFORMATION = 6
+}
+
+/**
+ * Origin source location of the reported peer.
+ */
+export enum PeerSource {
+  UNKNOWN = 0,
+  DIALOGS = 1,
+  VITRINE = 2,
+  MARKET = 3,
+  PRIVACY_BAR = 4
+}
+
+/**
+ * Extended peer representation with accessHash.
+ */
+export interface ExPeer {
+  type: ExPeerType | number;
+  id: number;
+  accessHash?: bigint | number | string;
+}
+
+/**
  * Display mode for launching Mini Apps / WebApps in Bale.
  */
 export enum ScreenMode {
@@ -710,6 +743,7 @@ export interface MessageEvent {
   delete(): Promise<any>;
   pin(): Promise<any>;
   forwardTo(toPeer: number | Peer): Promise<any>;
+  report(kind?: ReportKind, description?: string): Promise<any>;
 
   // Cash Gift Packet actions
   openGiftPacket(walletId?: string): Promise<OpenGiftPacketResponse>;
@@ -1236,6 +1270,17 @@ export interface GoldGiftPacketService {
   [method: string]: (payload?: any, metadata?: any) => Promise<any>;
 }
 
+/**
+ * Bale Protobuf Report service namespace.
+ */
+export interface ReportService {
+  reportInappropriateContent(payload: any, metadata?: any): Promise<any>;
+  ReportInappropriateContent(payload: any, metadata?: any): Promise<any>;
+  reportDismiss(payload: any, metadata?: any): Promise<any>;
+  ReportDismiss(payload: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
 // ==========================================
 // BaleClient Class
 // ==========================================
@@ -1259,6 +1304,7 @@ export class BaleClient extends EventEmitter {
   bank: BankingService;
   giftPacket: GiftPacketService;
   goldGiftPacket: GoldGiftPacketService;
+  report: ReportService;
   appzar: any;
   ketf: any;
   groups: GroupsService;
@@ -1572,6 +1618,59 @@ export class BaleClient extends EventEmitter {
    * Load list of blocked users.
    */
   loadBlockedUsers(): Promise<User[]>;
+
+  // ==========================================
+  // Reporting & Anti-Abuse (bale.report.v1.Report)
+  // ==========================================
+
+  /**
+   * Report an inappropriate peer (user, group, channel) for scam, spam, violence, etc.
+   * @param peer Peer ID or { type, id, accessHash }
+   * @param kind Category of abuse (SCAM, SPAM, INAPPROPRIATE_CONTENT, VIOLENCE, etc.)
+   * @param description Optional textual explanation
+   * @param source Origin source where the peer was encountered
+   */
+  reportPeer(peer: number | Peer | ExPeer, kind?: ReportKind, description?: string, source?: PeerSource): Promise<any>;
+
+  /**
+   * Report a user for spam or inappropriate conduct.
+   * @param userId Target user ID
+   * @param kind Abuse category
+   * @param description Optional details
+   * @param source Origin source
+   */
+  reportUser(userId: number | string, kind?: ReportKind, description?: string, source?: PeerSource): Promise<any>;
+
+  /**
+   * Report a group chat for inappropriate content or spam.
+   * @param groupId Target group ID
+   * @param kind Abuse category
+   * @param description Optional details
+   */
+  reportGroup(groupId: number | string, kind?: ReportKind, description?: string): Promise<any>;
+
+  /**
+   * Report specific message(s) within a chat.
+   * @param peer Chat peer
+   * @param mids Array of message IDs (randomIds) or single ID
+   * @param kind Abuse category
+   * @param description Optional details
+   */
+  reportMessages(peer: number | Peer | ExPeer, mids: Array<string | number> | string | number, kind?: ReportKind, description?: string): Promise<any>;
+
+  /**
+   * Report an inappropriate story.
+   * @param storyIds Array of story IDs or single story ID
+   * @param kind Abuse category
+   * @param description Optional details
+   */
+  reportStory(storyIds: Array<string | number> | string | number, kind?: ReportKind, description?: string): Promise<any>;
+
+  /**
+   * Dismiss a report alert or warning banner for a peer.
+   * @param peer Target peer
+   */
+  dismissReport(peer: number | Peer | ExPeer): Promise<any>;
 
   // ==========================================
   // Reactions & Folders
