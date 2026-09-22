@@ -19,10 +19,6 @@ async function main() {
   client.on('error', (err) => console.error(`[Connection Error]`, err.message));
 
   try {
-    console.log('Connecting to Bale server...');
-    await client.connect();
-    console.log('Connected!\n');
-
     const phone = await rl.question('Enter phone number (e.g. +989123456789): ');
     console.log(`Sending code to ${phone}...`);
 
@@ -39,7 +35,7 @@ async function main() {
         console.log(`Logged in as: ${loginRes.user.name || 'Bale User'} (ID: ${loginRes.user.id})`);
       }
     } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('password')) {
+      if (err.message && (err.message.toLowerCase().includes('password') || err.message.includes('PHONE_PASSWORD_INVALID'))) {
         console.log('2FA Password is required for this account.');
         const pwd = await rl.question('Enter your 2FA password: ');
         const pwdRes = await client.signInWithPassword(pwd);
@@ -52,8 +48,13 @@ async function main() {
       }
     }
 
-    console.log(`Session saved to ./session.json`);
+    console.log(`\nSession saved to ./session.json`);
     console.log(`StringSession: ${session.exportString()}`);
+
+    // Real-time WebSocket connection requires authenticated session (jwt & uid)
+    console.log('\nConnecting to real-time WebSocket stream...');
+    await client.connect();
+    console.log('Connected to real-time stream! ✨\n');
 
   } catch (err) {
     console.error('\n❌ Login failed:', err.message);

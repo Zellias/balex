@@ -5,6 +5,7 @@
 
 const EventEmitter = require('events');
 const crypto = require('crypto');
+const https = require('https');
 const { Proto, PeerType, ExPeerType, TypingType, DeviceType, ReportKind, PeerSource } = require('./proto');
 const { BaleConnection } = require('./connection');
 const { Session, StringSession, FileSession } = require('./session');
@@ -135,8 +136,135 @@ class BaleClient extends EventEmitter {
   }
 
   // ==========================================
-  // Authentication Flow
+  // gRPC-Web Unary & Authentication Flow
   // ==========================================
+
+  /**
+   * Execute an RPC unary call over gRPC-Web HTTP POST.
+   * Required for authentication (StartPhoneAuth, ValidateCode, ValidatePassword)
+   * which occurs before an authenticated WebSocket stream can be established.
+   * @param {string} serviceName - Full Protobuf service name (e.g. 'bale.auth.v1.Auth')
+   * @param {string} methodName - Method name (e.g. 'StartPhoneAuth')
+   * @param {Buffer} requestBytes - Encoded protobuf request payload
+   * @param {Object} [customHeaders={}]
+   * @returns {Promise<Buffer>}
+   */
+  async callGrpcUnary(serviceName, methodName, requestBytes, customHeaders = {}) {
+    const endpoints = [
+      this.options.grpcEndpoint || 'https://maviz-ws.bale.ai',
+      'https://next-ws.bale.ai'
+    ];
+
+    const frame = Buffer.alloc(5 + requestBytes.length);
+    frame[0] = 0x00; // Data frame
+    frame.writeUInt32BE(requestBytes.length, 1);
+    requestBytes.copy(frame, 5);
+
+    const nowStr = String(Date.now());
+    const apiVer = String(this.options.apiVersion || 171248);
+
+    const headers = {
+      'Content-Type': 'application/grpc-web+proto',
+      'Accept': 'application/grpc-web+proto',
+      'x-grpc-web': '1',
+      'Origin': 'https://web.bale.ai',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      'app_version': apiVer,
+      'browser_type': '1',
+      'browser_version': '128.0.0.0',
+      'os_type': '5',
+      'session_id': nowStr,
+      'language': 'fa',
+      'mt_app_version': apiVer,
+      'mt_browser_type': '1',
+      'mt_browser_version': '128.0.0.0',
+      'mt_os_type': '5',
+      'mt_session_id': nowStr,
+      'mt_language': 'fa',
+      ...customHeaders
+    };
+
+    if (this.session && this.session.token) {
+      headers['token'] = this.session.token;
+      headers['mt_token'] = this.session.token;
+      headers['authorization'] = `Bearer ${this.session.token}`;
+    }
+
+    let lastError = null;
+    for (const base of endpoints) {
+      try {
+        const url = new URL(`/${serviceName}/${methodName}`, base);
+        const res = await new Promise((resolve, reject) => {
+          const req = https.request(url, {
+            method: 'POST',
+            headers,
+            timeout: 15000
+          }, (res) => {
+            const chunks = [];
+            res.on('data', (c) => chunks.push(c));
+            res.on('end', () => {
+              const body = Buffer.concat(chunks);
+              resolve({ statusCode: res.statusCode, headers: res.headers, body });
+            });
+          });
+          req.on('error', reject);
+          req.on('timeout', () => {
+            req.destroy();
+            reject(new Error(`Request timeout (${base})`));
+          });
+          req.write(frame);
+          req.end();
+        });
+
+        // Check header-level gRPC error status
+        const grpcStatus = res.headers['grpc-status'];
+        const grpcMessage = res.headers['grpc-message'];
+        if (grpcStatus !== undefined && grpcStatus !== '0') {
+          const err = new Error(grpcMessage ? decodeURIComponent(grpcMessage) : `gRPC Error ${grpcStatus}`);
+          err.code = grpcStatus;
+          err.grpcMessage = grpcMessage;
+          throw err;
+        }
+
+        // Parse 5-byte gRPC-Web frames from response body
+        const body = res.body;
+        let offset = 0;
+        let responseData = Buffer.alloc(0);
+
+        while (offset + 5 <= body.length) {
+          const flag = body[offset];
+          const len = body.readUInt32BE(offset + 1);
+          offset += 5;
+          const chunk = body.subarray(offset, offset + len);
+          offset += len;
+
+          if (flag === 0x00) {
+            responseData = Buffer.concat([responseData, chunk]);
+          } else if (flag === 0x80) {
+            // Trailers
+            const trailersText = chunk.toString('utf8');
+            const statusMatch = trailersText.match(/grpc-status:\s*(\d+)/i);
+            const msgMatch = trailersText.match(/grpc-message:\s*([^\r\n]+)/i);
+            if (statusMatch && statusMatch[1] !== '0') {
+              const code = statusMatch[1];
+              const msg = msgMatch ? decodeURIComponent(msgMatch[1].trim()) : `gRPC Error ${code}`;
+              const err = new Error(msg);
+              err.code = code;
+              throw err;
+            }
+          }
+        }
+
+        return responseData;
+      } catch (err) {
+        lastError = err;
+        if (err.code || err.grpcMessage) {
+          throw err;
+        }
+      }
+    }
+    throw lastError || new Error('All gRPC-Web endpoints failed');
+  }
 
   /**
    * Request an SMS verification code for a phone number.
@@ -148,7 +276,7 @@ class BaleClient extends EventEmitter {
       deviceHash: this.session.deviceHash
     });
 
-    const resBytes = await this.connection.sendRequest(
+    const resBytes = await this.callGrpcUnary(
       'bale.auth.v1.Auth',
       'StartPhoneAuth',
       payload
@@ -176,7 +304,7 @@ class BaleClient extends EventEmitter {
       isJwt: true
     });
 
-    const resBytes = await this.connection.sendRequest(
+    const resBytes = await this.callGrpcUnary(
       'bale.auth.v1.Auth',
       'ValidateCode',
       payload
@@ -210,7 +338,7 @@ class BaleClient extends EventEmitter {
       isJwt: true
     });
 
-    const resBytes = await this.connection.sendRequest(
+    const resBytes = await this.callGrpcUnary(
       'bale.auth.v1.Auth',
       'ValidatePassword',
       payload

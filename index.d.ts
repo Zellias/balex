@@ -1355,6 +1355,17 @@ export class BaleClient extends EventEmitter {
   // ==========================================
 
   /**
+   * Execute an RPC unary call over gRPC-Web HTTP POST.
+   * Required for authentication (StartPhoneAuth, ValidateCode, ValidatePassword)
+   * which occurs before an authenticated WebSocket stream can be established.
+   * @param serviceName Full Protobuf service name (e.g. 'bale.auth.v1.Auth')
+   * @param methodName Method name (e.g. 'StartPhoneAuth')
+   * @param requestBytes Encoded protobuf request payload
+   * @param customHeaders Optional custom headers
+   */
+  callGrpcUnary(serviceName: string, methodName: string, requestBytes: Uint8Array | Buffer, customHeaders?: Record<string, string>): Promise<Buffer>;
+
+  /**
    * Request an SMS verification code for a phone number.
    * @param phoneNumber Phone number in international format, e.g. "+989123456789"
    */

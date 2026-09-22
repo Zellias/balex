@@ -6,14 +6,14 @@
 const EventEmitter = require('events');
 const { Proto } = require('./proto');
 
-// Resolve WebSocket implementation (native Node.js 22/24+ WebSocket or 'ws' package)
+// Resolve WebSocket implementation ('ws' package preferred if installed, native Node.js 22/24+ WebSocket as fallback)
 function getWebSocketImpl() {
-  if (typeof globalThis.WebSocket !== 'undefined') {
-    return globalThis.WebSocket;
-  }
   try {
     return require('ws');
   } catch (e) {
+    if (typeof globalThis.WebSocket !== 'undefined') {
+      return globalThis.WebSocket;
+    }
     throw new Error('No WebSocket implementation found. Please run on Node.js 22+ or install ws (`npm install ws`).');
   }
 }
@@ -50,6 +50,13 @@ class BaleConnection extends EventEmitter {
 
   async connect() {
     if (this.state === 'connected' || this.state === 'connecting') return;
+
+    if (!this.session || (!this.session.userId && !this.session.token)) {
+      const authErr = new Error('Cannot connect WebSocket: Unauthenticated session. Please authenticate first using sendCode() and signIn(), or load an active session.');
+      this.emit('error', authErr);
+      throw authErr;
+    }
+
     this.closedExplicitly = false;
     this.state = 'connecting';
     this.emit('status', 'connecting');

@@ -4,6 +4,8 @@
  * Zero external dependencies.
  */
 
+const crypto = require('crypto');
+
 // Wire Types
 const WIRE_VARINT = 0;
 const WIRE_FIXED64 = 1;
@@ -872,13 +874,18 @@ const Proto = {
   },
 
   // Auth RPC Models
-  encodeStartPhoneAuth({ phoneNumber, deviceTitle = 'Node.js Userbot', appId = 4, apiKey = 'C28D46DC4C3A7A26564BFCC48B929086A95C93C98E789A19847BEE8627DE4E7D', deviceHash = '' }) {
+  encodeStartPhoneAuth({ phoneNumber, deviceTitle = 'BaleX Desktop', appId = 4, apiKey = 'C28D46DC4C3A7A26564BFCC48B929086A95C93C98E789A19847BEE8627DE4E7D', deviceHash = null }) {
+    const phoneBigInt = typeof phoneNumber === 'bigint' ? phoneNumber : Proto.normalizePhoneNumber(phoneNumber);
+    const hashBytes = Buffer.isBuffer(deviceHash)
+      ? deviceHash
+      : (typeof deviceHash === 'string' && deviceHash.length === 32 ? Buffer.from(deviceHash, 'hex') : (typeof deviceHash === 'string' && deviceHash.length > 0 ? Buffer.from(deviceHash) : crypto.randomBytes(16)));
+
     const w = new ProtoWriter();
-    w.writeString(1, phoneNumber);
-    w.writeString(2, deviceTitle);
-    w.writeInt32(4, appId);
-    w.writeString(5, apiKey);
-    if (deviceHash) w.writeString(6, deviceHash);
+    w.writeInt64(1, phoneBigInt);
+    w.writeInt32(2, appId);
+    w.writeString(3, apiKey);
+    w.writeBytes(4, hashBytes);
+    w.writeString(5, deviceTitle);
     return w.finish();
   },
 
@@ -893,11 +900,28 @@ const Proto = {
     return res;
   },
 
-  encodeValidateCode({ code, transactionHash, isJwt = true }) {
+  normalizeCode(rawCode) {
+    if (!rawCode) return '';
+    const persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    let converted = String(rawCode);
+    for (let i = 0; i < 10; i++) {
+      converted = converted.split(persian[i]).join(String(i)).split(arabic[i]).join(String(i));
+    }
+    return converted.replace(/[^0-9]/g, '').trim();
+  },
+
+  encodeValidateCode({ code, transactionHash, isJwt = true, language = 1 }) {
+    const cleanCode = Proto.normalizeCode(code);
     const w = new ProtoWriter();
-    w.writeString(1, String(code));
-    w.writeString(2, String(transactionHash));
-    w.writeBool(3, isJwt);
+    w.writeString(1, String(transactionHash));
+    w.writeString(2, cleanCode);
+    if (isJwt) {
+      const sub = new ProtoWriter();
+      sub.writeBool(1, true);
+      w.writeMessage(3, sub.finish());
+    }
+    w.writeInt32(5, language);
     return w.finish();
   },
 
@@ -927,25 +951,75 @@ const Proto = {
     return res;
   },
 
-  encodeValidatePassword({ password, transactionHash, isJwt = true }) {
+  encodeValidatePassword({ password, transactionHash, isJwt = true, language = 1 }) {
     const w = new ProtoWriter();
-    w.writeString(1, password);
-    w.writeString(2, transactionHash);
-    w.writeBool(3, isJwt);
+    w.writeString(1, String(transactionHash));
+    w.writeString(2, String(password));
+    if (isJwt) {
+      const sub = new ProtoWriter();
+      sub.writeBool(1, true);
+      w.writeMessage(3, sub.finish());
+    }
+    w.writeInt32(5, language);
     return w.finish();
   },
 
   decodeUser(buf) {
     const r = new ProtoReader(buf);
-    const u = { id: 0, name: '', username: '', sex: 0, phone: '' };
+    const u = { id: 0, name: '', username: '', sex: 0, phone: '', accessHash: 0n };
     while (r.hasMore()) {
       const { fieldNumber, wireType } = r.readTag();
-      if (fieldNumber === 1) u.id = Number(r.readVarint());
-      else if (fieldNumber === 2) u.name = r.readString(Number(r.readVarint()));
-      else if (fieldNumber === 3) u.username = r.readString(Number(r.readVarint()));
-      else if (fieldNumber === 4) u.sex = Number(r.readVarint());
-      else if (fieldNumber === 5) u.phone = r.readString(Number(r.readVarint()));
-      else r.skip(wireType);
+      if (fieldNumber === 1) {
+        u.id = Number(r.readVarint());
+      } else if (fieldNumber === 2) {
+        if (wireType === 2) {
+          u.name = r.readString(Number(r.readVarint()));
+        } else {
+          u.accessHash = r.readVarint();
+        }
+      } else if (fieldNumber === 3) {
+        if (wireType === 2) {
+          const str = r.readString(Number(r.readVarint()));
+          if (!u.name) u.name = str;
+          else if (!u.username) u.username = str;
+        } else {
+          r.skip(wireType);
+        }
+      } else if (fieldNumber === 4) {
+        if (wireType === 2) {
+          const sub = r.readSubReader(Number(r.readVarint()));
+          while (sub.hasMore()) {
+            const st = sub.readTag();
+            if (st.fieldNumber === 1 && st.wireType === 2) {
+              const localName = sub.readString(Number(sub.readVarint()));
+              if (!u.name) u.name = localName;
+            } else {
+              sub.skip(st.wireType);
+            }
+          }
+        } else {
+          u.sex = Number(r.readVarint());
+        }
+      } else if (fieldNumber === 5) {
+        if (wireType === 2) u.phone = r.readString(Number(r.readVarint()));
+        else r.skip(wireType);
+      } else if (fieldNumber === 9) {
+        if (wireType === 2) {
+          const sub = r.readSubReader(Number(r.readVarint()));
+          while (sub.hasMore()) {
+            const st = sub.readTag();
+            if (st.fieldNumber === 1 && st.wireType === 2) {
+              u.username = sub.readString(Number(sub.readVarint()));
+            } else {
+              sub.skip(st.wireType);
+            }
+          }
+        } else {
+          r.skip(wireType);
+        }
+      } else {
+        r.skip(wireType);
+      }
     }
     return u;
   },
