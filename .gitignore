@@ -1,0 +1,43 @@
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs & Environment
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.*
+!.env.example
+
+# Node.js
+node_modules/
+
+# Flutter / Dart build artifacts & caches
+balex/build/
+balex/.dart_tool/
+balex/.flutter-plugins*
+balex/android/.gradle/
+balex/android/local.properties
+balex/ios/Pods/
+balex/ios/.symlinks/
+balex/ios/Flutter/Flutter.framework
+balex/ios/Flutter/Flutter.podspec
+balex/.idea/
+*.iml
+
+# Crawled / Raw website assets & temporary dumps
+_DataURI/
+web.bale.ai/
+assets.bale.ai/
+flags.ble.ir/
+next-ws.bale.ai/
+sentry.hamravesh.com/
+worldtimeapi.org/
+wss---next-ws.bale.ai/

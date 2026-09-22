@@ -1,0 +1,30 @@
+{
+  "name": "bale-userbot",
+  "version": "1.0.0",
+  "description": "High-performance Node.js userbot and client library for Bale Messenger with 53 Protobuf services and 636 RPC methods",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "extract": "node scripts/extract-methods.js",
+    "typecheck": "node tests/test_types.js",
+    "test": "node tests/test_proto.js && node tests/test_catalog.js && node tests/test_client.js && node tests/test_media_and_groups.js && node tests/test_all_features.js && node tests/test_giftpacket_and_miniapp.js && node tests/test_bot.js && node tests/test_types.js"
+  },
+  "keywords": [
+    "bale",
+    "bale-messenger",
+    "bale-userbot",
+    "userbot",
+    "protobuf",
+    "mkproto",
+    "client",
+    "telegram-alternative"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "optionalDependencies": {
+    "ws": "^8.18.0"
+  }
+}
