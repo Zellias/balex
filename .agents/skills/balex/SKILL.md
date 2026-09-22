@@ -456,14 +456,13 @@ Automated bots on Bale are detected if they perform instant actions without simu
 | **`RangeError: 17..186: -9223372036854775792`** | `64-bit int overflow` in `safeLen` calculation and misinterpreting `accessHash` (int64 varint) as string length in `User` model. | Calculate `maxAvailable = buf.length - offset` and clamp `safeLen = min(length, maxAvailable)`. In `User` decoder, treat Field 2 as `int64` varint. |
 | **`PHONE_CODE_INVALID`** | Entering Persian digits `۰-۹` or dashes in SMS OTP. | Always run `BaleProto.normalizeCode(raw)` before gRPC dispatch. |
 | **`4401 onUnauthenticated`** | Connecting to WebSocket before logging in. | Only open WebSocket **after** receiving `jwt` and `uid` from `ValidateCode`. |
-| **UI Freeze on Android (2.3s doFrame)** | `GoogleFonts.vazirmatn()` attempting network HTTP download from `fonts.gstatic.com` (which is blocked inside Iran). | Set `GoogleFonts.config.allowRuntimeFetching = false;` or use local/bundled TTF assets with system font fallbacks. |
-| **Status Bar Clipping** | Top bar drawn under Android camera notch. | Wrap top header in `SafeArea(bottom: false)`. |
+| **`JSON struct tag backticks in Node.js templates`** | Struct tags containing unescaped backticks terminating template literals. | Always escape backticks (\`) inside Go struct definitions within JS files. |
 
 ---
 
 ## 10. Official Bale HTTP Bot API (https://docs.bale.ai/)
 
-In addition to userbots and the binary Protobuf protocol, the JavaScript SDK provides complete, zero-dependency support for official **Bale Bots** created via `@botfather`.
+In addition to userbots and the binary Protobuf protocol, the **BaleX** SDK (`balex`) provides complete, zero-dependency support for official **Bale Bots** created via `@botfather`.
 
 ### 10.1 Key Architecture & Endpoints
 - **Base API URL**: `https://tapi.bale.ai/bot<token>/<method>`
@@ -473,7 +472,7 @@ In addition to userbots and the binary Protobuf protocol, the JavaScript SDK pro
 
 ### 10.2 Quick Start & Long Polling
 ```javascript
-const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('bale-userbot');
+const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('balex');
 
 const bot = new BaleBot('123456789:abcdIuZmK5qNEm2A1BhUaAg7MPJv1O9KCcBQB2ro');
 
@@ -502,58 +501,64 @@ bot.on('callback_query', async (query) => {
 bot.startPolling({ interval: 300, timeout: 20 });
 ```
 
-### 10.3 Webhook Deployment
-For production servers (Express, Koa, or native Node.js HTTP server):
-```javascript
-const http = require('http');
+### 10.3 Complete List of 60 Official Bale Bot API Methods
+All 60 official methods from `https://docs.bale.ai/` are natively available on `BaleBot`:
 
-// Set webhook on Bale servers
-await bot.setWebhook('https://mybot.example.com/bale-webhook');
+| Category | Methods |
+| :--- | :--- |
+| **Bot Lifecycle & Polling** | `getMe()`, `logout()`, `close()`, `getUpdates(options)`, `setWebhook(urlOrOptions)`, `deleteWebhook()`, `getWebhookInfo()`, `startPolling(options)`, `stopPolling()`, `createWebhookMiddleware(options)` |
+| **Send Messages & Media** | `sendMessage(chatId, text, options)`, `forwardMessage(chatId, fromChatId, messageId)`, `copyMessage(chatId, fromChatId, messageId, options)`, `sendPhoto(chatId, photo, options)`, `sendAudio(chatId, audio, options)`, `sendDocument(chatId, document, options)`, `sendVideo(chatId, video, options)`, `sendAnimation(chatId, animation, options)`, `sendVoice(chatId, voice, options)`, `sendMediaGroup(chatId, media)`, `sendLocation(chatId, lat, lon, options)`, `sendContact(chatId, phone, firstName, options)`, `sendChatAction(chatId, action)` |
+| **File Management** | `getFile(fileId)`, `downloadFile(fileIdOrPath, destinationPath)` |
+| **Inline & Reviews** | `answerCallbackQuery(callbackQueryId, options)`, `askReview(chatId)` |
+| **Edit & Delete** | `editMessageText(chatId, messageId, text, options)`, `editMessageCaption(chatId, messageId, caption, options)`, `editMessageReplyMarkup(chatId, messageId, replyMarkup)`, `deleteMessage(chatId, messageId)` |
+| **Chat Administration** | `banChatMember(chatId, userId)`, `unbanChatMember(chatId, userId)`, `promoteChatMember(chatId, userId, options)`, `setChatPhoto(chatId, photo)`, `deleteChatPhoto(chatId)`, `setChatTitle(chatId, title)`, `setChatDescription(chatId, desc)`, `pinChatMessage(chatId, messageId)`, `unpinChatMessage(chatId, messageId)`, `unpinAllChatMessages(chatId)`, `leaveChat(chatId)`, `getChat(chatId)`, `getChatAdministrators(chatId)`, `getChatMembersCount(chatId)`, `getChatMember(chatId, userId)`, `createChatInviteLink(chatId)`, `revokeChatInviteLink(chatId, inviteLink)`, `exportChatInviteLink(chatId)` |
+| **Sticker Sets** | `uploadStickerFile(userId, pngSticker)`, `createNewStickerSet(userId, name, title, pngSticker, emojis)`, `addStickerToSet(userId, name, pngSticker, emojis)` |
+| **Electronic Wallet & Payments** | `sendInvoice(chatId, title, desc, payload, providerToken, currency, prices, options)`, `createInvoiceLink(title, desc, payload, providerToken, currency, prices, options)`, `answerPreCheckoutQuery(preCheckoutQueryId, ok, errorMessage)`, `inquireTransaction(transactionId)` |
 
-// Attach middleware
-const webhookHandler = bot.createWebhookMiddleware({ secretToken: 'SECRET_TOKEN' });
-const server = http.createServer((req, res) => {
-  if (req.url === '/bale-webhook') {
-    return webhookHandler(req, res);
-  }
-  res.writeHead(404).end();
-});
-server.listen(443);
+---
+
+## 11. Go (Golang) Integration & IPC Bridge Runbook
+
+The library can be driven directly from **Go (Golang)** backends using two methods:
+
+### 11.1 STDIO Streaming IPC (Subprocess Execution)
+Spawns Node as a child process via `os/exec` with zero network overhead:
+```go
+cmd := exec.Command("node", "src/bridge.js", "--stdio")
+stdin, _ := cmd.StdinPipe()
+stdout, _ := cmd.StdoutPipe()
+_ = cmd.Start()
+
+// Send JSON-RPC line
+req, _ := json.Marshal(map[string]interface{}{
+    "id": 1,
+    "action": "call",
+    "method": "sendMessage",
+    "params": []interface{}{123456789, "Hello from Go!"},
+})
+stdin.Write(append(req, '\n'))
 ```
 
-### 10.4 Electronic Wallet & Invoices (کیف‌پول الکترونیکی بله)
-```javascript
-// 1. Send Invoice
-await bot.sendInvoice(
-  chatId,
-  'اشتراک ویژه',
-  'دسترسی به خدمات ویژه بازو',
-  'order_12345',
-  'PROVIDER_TOKEN',
-  'IRR',
-  [{ label: 'هزینه اشتراک', amount: 100000 }]
-);
-
-// 2. Pre-checkout query confirmation
-bot.on('pre_checkout_query', async (query) => {
-  await bot.answerPreCheckoutQuery(query.id, true);
-});
-
-// 3. Successful payment handling
-bot.on('successful_payment', async (payment, msg) => {
-  console.log('Payment successful:', payment.total_amount, payment.invoice_payload);
-});
-
-// 4. Inquire transaction status
-const tx = await bot.inquireTransaction('tx_987654');
-console.log('Status:', tx.status);
+### 11.2 HTTP / JSON-RPC Bridge Server
+Run the bridge daemon:
+```bash
+npx balex bridge --port 8765
+```
+Send HTTP requests from Go:
+```go
+resp, err := http.Post("http://127.0.0.1:8765/api/call", "application/json", bytes.NewBuffer(body))
 ```
 
-### 10.5 Userbot vs Official Bot: When to Use Which?
+---
+
+## 12. Userbot vs Official Bot: Architecture Comparison
+
 | Feature | `BaleClient` (Userbot / Protobuf) | `BaleBot` (Official Bot / HTTP API) |
 | :--- | :--- | :--- |
+| **Package Name** | `balex` (`require('balex')`) | `balex` (`require('balex')`) |
 | **Authentication** | Phone number + SMS OTP (`StartPhoneAuth`) | Bot token from `@botfather` |
 | **Protocol** | Binary Protobuf over WebSocket & gRPC-Web | JSON / Multipart over HTTPS |
 | **Endpoints** | `maviz-ws.bale.ai` / `next-ws.bale.ai` | `tapi.bale.ai/bot<token>/` |
-| **Capabilities** | Personal account automation, Shetab banking, Cash & Gold gift packets, Group/Channel management | Verified official bots, Payments/Invoices, Webhook support, Inline keyboards |
+| **Capabilities** | Personal account automation, Shetab banking, Cash & Gold gift packets, Group/Channel management, 53 raw Protobuf services | Verified official bots, Payments/Invoices, Webhook support, Inline keyboards |
 | **Updates** | Real-time WebSocket multiplexed events (60+ events) | Long Polling (`getUpdates`) or Webhooks |
+

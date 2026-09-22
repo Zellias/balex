@@ -994,6 +994,7 @@
         <a href="#bale-bot-polling" class="sidebar-link">دریافت آپدیت‌ها (Polling & Webhook)</a>
         <a href="#bale-bot-keyboards" class="sidebar-link">کیبوردهای شیشه‌ای و معمولی (Keyboards)</a>
         <a href="#bale-bot-payments" class="sidebar-link">کیف‌پول الکترونیکی و پرداخت (Invoices)</a>
+        <a href="#bale-bot-methods-table" class="sidebar-link">کاتالوگ ۶۰ متد بات (Bot Methods)</a>
       </div>
 
       <div class="sidebar-group">
@@ -1104,14 +1105,14 @@
             <button class="btn-copy" onclick="copyCode(this)">کپی</button>
           </div>
           <pre><code class="language-bash"># نصب با نام کاربری و مخزن گیت‌هاب
-npm install github:Zellias/bale-userbot
+npm install github:Zellias/balex
 
 # یا نصب با آدرس کامل Git (HTTPS)
-npm install git+https://github.com/Zellias/bale-userbot.git
+npm install git+https://github.com/Zellias/balex.git
 
 # یا با Yarn و pnpm
-pnpm add github:Zellias/bale-userbot
-yarn add github:Zellias/bale-userbot</code></pre>
+pnpm add github:Zellias/balex
+yarn add github:Zellias/balex</code></pre>
         </div>
 
         <h3>روش ۲: نصب از طریق رجیستری npm</h3>
@@ -1120,7 +1121,7 @@ yarn add github:Zellias/bale-userbot</code></pre>
             <span>Terminal</span>
             <button class="btn-copy" onclick="copyCode(this)">کپی</button>
           </div>
-          <pre><code class="language-bash">npm install bale-userbot</code></pre>
+          <pre><code class="language-bash">npm install balex</code></pre>
         </div>
       </section>
 
@@ -2595,6 +2596,375 @@ console.log('وضعیت تراکنش:', tx.status, tx.amount);</code></pre>
         </div>
       </section>
 
+      <section id="bale-bot-methods-table">
+        <h3>کاتالوگ جامع تمامی ۶۰ متد رسمی بات بله (docs.bale.ai)</h3>
+        <p>تمامی متدهای استاندارد پلتفرم بات بله در کلاس <code>BaleBot</code> پیاده‌سازی شده‌اند و از طریق تایپ‌های TypeScript با اتوکامپلیت کامل پشتیبانی می‌شوند:</p>
+
+        <div class="table-container">
+          <table class="services-table">
+            <thead>
+              <tr>
+                <th>دسته‌بندی</th>
+                <th>نام متد و پارامترها</th>
+                <th>نوع بازگشتی</th>
+                <th>توضیحات عملکرد</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- چرخه حیات و وب‌هوک -->
+              <tr>
+                <td><span class="badge badge-rpc">چرخه حیات</span></td>
+                <td><code>bot.getMe()</code></td>
+                <td><code>Promise&lt;BotUser&gt;</code></td>
+                <td>دریافت اطلاعات حساب ربات (نام کاربری، نام، شناسه).</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">چرخه حیات</span></td>
+                <td><code>bot.logout()</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>خروج از توکن و باطل‌سازی سشن فعلی ربات.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">چرخه حیات</span></td>
+                <td><code>bot.close()</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>بستن پردازش بات و لغو درخواست‌ها.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">آپدیت‌ها</span></td>
+                <td><code>bot.getUpdates(options)</code></td>
+                <td><code>Promise&lt;BotUpdate[]&gt;</code></td>
+                <td>دریافت دستی آرایه آپدیت‌ها با <code>offset</code> و <code>limit</code>.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">وب‌هوک</span></td>
+                <td><code>bot.setWebhook(urlOrOptions)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>تنظیم آدرس URL وب‌هوک و توکن امنیتی در سرور بله.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">وب‌هوک</span></td>
+                <td><code>bot.deleteWebhook()</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>حذف وب‌هوک فعال و بازگشت به حالت پولینگ دستی.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">وب‌هوک</span></td>
+                <td><code>bot.getWebhookInfo()</code></td>
+                <td><code>Promise&lt;WebhookInfo&gt;</code></td>
+                <td>استعلام وضعیت وب‌هوک، آخرین خطا و تعداد آپدیت‌های در صف.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">موتور دریافت</span></td>
+                <td><code>bot.startPolling(options)</code></td>
+                <td><code>void</code></td>
+                <td>شروع موتور خودکار دریافت آپدیت‌ها با Long Polling.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">موتور دریافت</span></td>
+                <td><code>bot.stopPolling()</code></td>
+                <td><code>void</code></td>
+                <td>توقف حلقه Long Polling بات.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-rpc">وب‌هوک</span></td>
+                <td><code>bot.createWebhookMiddleware(options)</code></td>
+                <td><code>Function</code></td>
+                <td>ایجاد میدلور استاندارد سازگار با Express, Koa و Node HTTP.</td>
+              </tr>
+
+              <!-- ارسال پیام و مدیا -->
+              <tr>
+                <td><span class="badge badge-success">پیام‌رسانی</span></td>
+                <td><code>bot.sendMessage(chatId, text, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال پیام متنی با پشتیبانی از کیبورد و فرمت‌بندی HTML/Markdown.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">پیام‌رسانی</span></td>
+                <td><code>bot.forwardMessage(chatId, fromChatId, messageId)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>فوروارد پیام از یک چت به چت دیگر.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">پیام‌رسانی</span></td>
+                <td><code>bot.copyMessage(chatId, fromChatId, messageId, options)</code></td>
+                <td><code>Promise&lt;BotMessageId&gt;</code></td>
+                <td>کپی و ارسال مجدد پیام بدون برچسب فوروارد.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">چندرسانه‌ای</span></td>
+                <td><code>bot.sendPhoto(chatId, photo, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال عکس به صورت باینری (بافر/فایل) یا آدرس اینترنتی (URL).</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">چندرسانه‌ای</span></td>
+                <td><code>bot.sendAudio(chatId, audio, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال فایل صوتی و موسیقی با متادیتای خواننده و زمان.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">چندرسانه‌ای</span></td>
+                <td><code>bot.sendDocument(chatId, document, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال اسناد عمومی (PDF, ZIP, APK, کد و ...).</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">چندرسانه‌ای</span></td>
+                <td><code>bot.sendVideo(chatId, video, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال ویدیو همراه با ابعاد، مدت زمان و پیش‌نمایش.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">چندرسانه‌ای</span></td>
+                <td><code>bot.sendAnimation(chatId, animation, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال گیف انیمیشن (GIF یا فایل MP4 بدون صدا).</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">چندرسانه‌ای</span></td>
+                <td><code>bot.sendVoice(chatId, voice, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال ویس صوتی ضبط‌شده با نمایش شکل‌موج.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">چندرسانه‌ای</span></td>
+                <td><code>bot.sendMediaGroup(chatId, media)</code></td>
+                <td><code>Promise&lt;BotMessage[]&gt;</code></td>
+                <td>ارسال آلبوم رسانه‌ای متشکل از ۲ تا ۱۰ عکس و ویدیو.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">موقعیت</span></td>
+                <td><code>bot.sendLocation(chatId, lat, lon, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال موقعیت مکانی جغرافیایی بر روی نقشه.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">مخاطب</span></td>
+                <td><code>bot.sendContact(chatId, phone, firstName, options)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال کارت مخاطب شامل شماره تلفن و نام.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-success">وضعیت</span></td>
+                <td><code>bot.sendChatAction(chatId, action)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>ارسال وضعیت فعالیت مانند <code>typing</code>، <code>upload_photo</code> یا <code>record_voice</code>.</td>
+              </tr>
+
+              <!-- دانلود و فایل -->
+              <tr>
+                <td><span class="badge badge-info">فایل‌ها</span></td>
+                <td><code>bot.getFile(fileId)</code></td>
+                <td><code>Promise&lt;BotFile&gt;</code></td>
+                <td>دریافت مشخصات فایل و ساخت مسیر دانلود در سرور بله.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-info">فایل‌ها</span></td>
+                <td><code>bot.downloadFile(fileIdOrPath, dest)</code></td>
+                <td><code>Promise&lt;Buffer&gt;</code></td>
+                <td>دانلود مستقیم باینری فایل از سرور <code>tapi.bale.ai/file/</code>.</td>
+              </tr>
+
+              <!-- ویرایش و تعاملی -->
+              <tr>
+                <td><span class="badge badge-warning">تعاملی</span></td>
+                <td><code>bot.answerCallbackQuery(id, options)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>پاسخ به کلیک دکمه‌های شیشه‌ای (نمایش آلرت یا توست).</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-warning">تعاملی</span></td>
+                <td><code>bot.askReview(chatId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>ارسال درخواست ثبت نظر و امتیازدهی به بازو توسط کاربر.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-warning">ویرایش</span></td>
+                <td><code>bot.editMessageText(chatId, msgId, text, opts)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ویرایش متن پیام ارسال شده.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-warning">ویرایش</span></td>
+                <td><code>bot.editMessageCaption(chatId, msgId, caption, opts)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ویرایش کپشن عکس، ویدیو یا سند.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-warning">ویرایش</span></td>
+                <td><code>bot.editMessageReplyMarkup(chatId, msgId, markup)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>تغییر یا حذف دکمه‌های شیشه‌ای پیام.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-danger">حذف</span></td>
+                <td><code>bot.deleteMessage(chatId, messageId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>حذف کامل یک پیام در گفتگو یا گروه.</td>
+              </tr>
+
+              <!-- مدیریت چت -->
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.banChatMember(chatId, userId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>اخراج و مسدودسازی کاربر از گروه یا کانال.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.unbanChatMember(chatId, userId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>رفع مسدودیت کاربر در چت.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.promoteChatMember(chatId, userId, options)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>ارتقای کاربر به مدیر و تعیین دسترسی‌های ادمین.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.setChatPhoto(chatId, photo)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>تغییر عکس پروفایل گروه یا کانال.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.deleteChatPhoto(chatId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>حذف عکس پروفایل چت.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.setChatTitle(chatId, title)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>تغییر عنوان گروه یا کانال.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.setChatDescription(chatId, desc)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>تغییر بیوگرافی و توضیحات چت.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.pinChatMessage(chatId, messageId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>پین و سنجاق کردن پیام در بالای چت.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.unpinChatMessage(chatId, messageId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>برداشتن پیام از حالت پین.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.unpinAllChatMessages(chatId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>برداشتن همه پیام‌های پین شده.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">مدیریت</span></td>
+                <td><code>bot.leaveChat(chatId)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>خروج ربات از گروه یا کانال.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">اطلاعات</span></td>
+                <td><code>bot.getChat(chatId)</code></td>
+                <td><code>Promise&lt;BotChat&gt;</code></td>
+                <td>دریافت اطلاعات کامل چت (نام، بیو، تعداد اعضا).</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">اطلاعات</span></td>
+                <td><code>bot.getChatAdministrators(chatId)</code></td>
+                <td><code>Promise&lt;BotChatMember[]&gt;</code></td>
+                <td>دریافت لیست مدیران و اختیارات آن‌ها.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">اطلاعات</span></td>
+                <td><code>bot.getChatMembersCount(chatId)</code></td>
+                <td><code>Promise&lt;number&gt;</code></td>
+                <td>تعداد اعضای گروه یا کانال.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">اطلاعات</span></td>
+                <td><code>bot.getChatMember(chatId, userId)</code></td>
+                <td><code>Promise&lt;BotChatMember&gt;</code></td>
+                <td>استعلام وضعیت یک عضو در چت.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">لینک دعوت</span></td>
+                <td><code>bot.createChatInviteLink(chatId)</code></td>
+                <td><code>Promise&lt;ChatInviteLink&gt;</code></td>
+                <td>ایجاد لینک دعوت جدید برای گروه یا کانال.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">لینک دعوت</span></td>
+                <td><code>bot.revokeChatInviteLink(chatId, link)</code></td>
+                <td><code>Promise&lt;ChatInviteLink&gt;</code></td>
+                <td>باطل کردن لینک دعوت قبلی.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-primary">لینک دعوت</span></td>
+                <td><code>bot.exportChatInviteLink(chatId)</code></td>
+                <td><code>Promise&lt;string&gt;</code></td>
+                <td>استخراج لینک اصلی دعوت به چت.</td>
+              </tr>
+
+              <!-- استیکر -->
+              <tr>
+                <td><span class="badge badge-info">استیکر</span></td>
+                <td><code>bot.uploadStickerFile(userId, pngSticker)</code></td>
+                <td><code>Promise&lt;BotFile&gt;</code></td>
+                <td>آپلود فایل استیکر PNG با سایز ۵۱۲x۵۱۲.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-info">استیکر</span></td>
+                <td><code>bot.createNewStickerSet(userId, name, title, png, emojis)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>ساخت بسته استیکر جدید برای ربات.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-info">استیکر</span></td>
+                <td><code>bot.addStickerToSet(userId, name, png, emojis)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>افزودن استیکر جدید به بسته موجود.</td>
+              </tr>
+
+              <!-- مالی و پرداخت -->
+              <tr>
+                <td><span class="badge badge-gold">پرداخت بله</span></td>
+                <td><code>bot.sendInvoice(chatId, title, desc, payload, token, curr, prices, opts)</code></td>
+                <td><code>Promise&lt;BotMessage&gt;</code></td>
+                <td>ارسال فاکتور خرید کیف‌پول الکترونیکی بله با مبلغ ریالی.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gold">پرداخت بله</span></td>
+                <td><code>bot.createInvoiceLink(title, desc, payload, token, curr, prices, opts)</code></td>
+                <td><code>Promise&lt;string&gt;</code></td>
+                <td>ساخت لینک مستقیم پرداخت بدون نیاز به ارسال پیام.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gold">پرداخت بله</span></td>
+                <td><code>bot.answerPreCheckoutQuery(preCheckoutId, ok, errMsg)</code></td>
+                <td><code>Promise&lt;boolean&gt;</code></td>
+                <td>تایید نهایی وضعیت کالا پیش از کسر وجه از کیف‌پول.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gold">پرداخت بله</span></td>
+                <td><code>bot.inquireTransaction(transactionId)</code></td>
+                <td><code>Promise&lt;BotTransaction&gt;</code></td>
+                <td>استعلام وضعیت موفقیت، مبلغ و زمان تراکنش بانکی.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- بخش استوری، زمان‌بندی و هوش مصنوعی -->
       <section id="story-manage">
         <h2>استوری‌های بله (Stories API)</h2>
@@ -3165,7 +3535,7 @@ const res2 = await client.invoke('bale.users.v1.Users', 'LoadFullUsers', {
         <p>خیر، کتابخانه BaleX کامپوننتی مستقل و سمت سرور است و بر روی هر سرور لینوکس، مک، ویندوز و کانتینرهای داکر بدون نیاز به گوشی روشن، شبیه‌ساز یا مرورگر کار می‌کند.</p>
 
         <h3>چگونه می‌توان روی سرور لینوکس هاست کرد؟</h3>
-        <p>کافیست با دستور <code>npm install github:Zellias/bale-userbot</code> کتابخانه را نصب کرده و آن را با <code>pm2</code> یا به صورت سرویس <code>systemd</code> اجرا نگه دارید.</p>
+        <p>کافیست با دستور <code>npm install github:Zellias/balex</code> کتابخانه را نصب کرده و آن را با <code>pm2</code> یا به صورت سرویس <code>systemd</code> اجرا نگه دارید.</p>
 
         <h3>آیا با تغییر آی‌پی سشن باطل می‌شود؟</h3>
         <p>خیر، سشن بله متصل به توکن JWT است و تا زمانی که خروج از حساب نزده باشید یا از طریق اپلیکیشن سشن را لغو نکرده باشید، برای ماه‌ها پایدار می‌ماند.</p>
@@ -3264,7 +3634,7 @@ func main() {
             <button class="btn-copy" onclick="copyCode(this)">کپی</button>
           </div>
           <pre><code class="language-bash"># اجرای سرور پل ارتباطی روی پورت ۸۷۶۵
-npx bale-userbot bridge --port 8765</code></pre>
+npx balex bridge --port 8765</code></pre>
         </div>
 
         <p>سپس در هر پروژه Go با پکیج استاندارد <code>net/http</code> به آن متصل شوید:</p>
@@ -3354,6 +3724,7 @@ func main() {
         <li class="toc-item"><a href="#bale-bot-polling">دریافت آپدیت بات (Polling & Webhook)</a></li>
         <li class="toc-item"><a href="#bale-bot-keyboards">کیبوردهای بازو</a></li>
         <li class="toc-item"><a href="#bale-bot-payments">پرداخت الکترونیکی بله</a></li>
+        <li class="toc-item"><a href="#bale-bot-methods-table">کاتالوگ ۶۰ متد بات</a></li>
         <li class="toc-item"><a href="#story-manage">استوری‌های بله</a></li>
         <li class="toc-item"><a href="#scheduler-manage">پیام زمان‌بندی شده</a></li>
         <li class="toc-item"><a href="#ai-tldr">هوش مصنوعی و خلاصه‌ساز</a></li>

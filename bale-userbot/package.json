@@ -1,12 +1,12 @@
 {
-  "name": "bale-userbot",
+  "name": "balex",
   "version": "1.2.0",
   "description": "High-performance Node.js & Go-compatible userbot, client library, and Bot API for Bale Messenger with 53 Protobuf services and 636 RPC methods",
   "main": "index.js",
   "types": "index.d.ts",
   "bin": {
-    "bale-userbot": "./bin/cli.js",
-    "balex": "./bin/cli.js"
+    "balex": "./bin/cli.js",
+    "bale-userbot": "./bin/cli.js"
   },
   "scripts": {
     "start": "node index.js",
@@ -17,9 +17,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Zellias/bale-userbot.git"
+    "url": "git+https://github.com/Zellias/balex.git"
   },
-  "homepage": "https://zellias.github.io/bale-userbot/",
+  "homepage": "https://zellias.github.io/balex/",
   "keywords": [
     "bale",
     "bale-messenger",

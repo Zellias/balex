@@ -147,33 +147,63 @@ Bale supports two distinct gift packet subsystems:
 - `randomId`: Unique int64 identifier to prevent duplicate sends.
 - `message`: Text message with optional formatting tags or reply-to reference (`replyToMessageId`).
 
-### WebSocket Stream Event Decoding & Complete 16-Event Catalog
-Incoming server frames have wire tags and are mapped to 16 client events:
+### WebSocket Stream Event Decoding & Comprehensive 60+ Events Catalog
+Incoming server frames have wire tags and are mapped to client events across all categories:
 
-| Event Name | Wire Source | Payload | Description |
+| Event Name | Wire Source | Category | Description |
 | :--- | :--- | :--- | :--- |
-| `message` | Tag `55` (`UpdateMessage`) | `MessageEvent` | New incoming message with rich action helpers |
-| `messageEdit` | Tag `162` (`UpdateMessageContentChanged`) | `{ peer, rid, message, date }` | Message edited |
-| `messageDelete` | Tag `46` (`UpdateMessageDelete`) | `{ peer, rids }` | Message deleted |
-| `messageReceived` | Tag `54` (`UpdateMessageReceived`) | `{ peer, startDate, date }` | Message delivered checkmark (grey tick) |
-| `messageRead` | Tag `19` (`UpdateMessageRead`) | `{ peer, startDate, date }` | Messages read / seen (double blue ticks) |
-| `chatClear` | Tag `47` (`UpdateChatClear`) | `{ peer }` | Chat cleared |
-| `reaction` | Tag `222` / `54323` | `{ peer, rid, reactions, reactionByMe }` | Reaction added / removed |
-| `typing` | Tag `6` (`UpdateTyping`) | `{ peer, userId, typingType }` | User started typing |
-| `typingStop` | Tag `81` (`UpdateTypingStop`) | `{ peer, userId }` | User stopped typing |
-| `userOnline` | Tag `7` (`UpdateUserOnline`) | `{ userId, deviceType }` | User came online |
-| `userOffline` | Tag `8` (`UpdateUserOffline`) | `{ userId, lastSeen }` | User went offline with lastSeen timestamp |
-| `connected` | Socket Transport | `{ uid, url, timestamp }` | WebSocket connection established |
-| `disconnected` | Socket Transport | `{ code, reason }` | WebSocket disconnected |
-| `status` | Socket Transport | `ConnectionStatus` | State machine change (CONNECTING, CONNECTED, ...) |
-| `error` | Runtime | `Error` | Network or protobuf framing errors |
-| `update` | Universal | `{ type, data, raw }` | Raw server frame update for custom pipeline |
+| `message` | Tag `55` | Messaging | New incoming message with rich action helpers |
+| `messageEdit` | Tag `162` | Messaging | Message content edited |
+| `messageDelete` | Tag `46` | Messaging | Message deleted |
+| `chatClear` | Tag `47` | Messaging | Chat history cleared |
+| `chatDelete` | Tag `48` | Messaging | Entire chat deleted |
+| `messageReceived` | Tag `54` | Messaging | Message delivered checkmark (grey tick) |
+| `messageRead` | Tag `19` | Messaging | Messages read / seen (double blue ticks) |
+| `messageReadByMe` | Tag `50` | Messaging | Messages read by self |
+| `chatShow` / `chatArchive` / `chatFavourite` | Tags `93` / `94` / `95` | Messaging | Chat visibility and folder status |
+| `messageDateChanged` / `messageQuotedChanged` | Tags `163` / `169` | Messaging | Message metadata changes |
+| `stickerCollectionsChanged` | Tag `164` | Messaging | User sticker packs updated |
+| `mentionReadByMe` / `pinnedDialogsChanged` | Tags `52829` / `52830` | Messaging | Mentions and pinned chat list |
+| `dialogsMarkedAsRead` / `dialogsMarkedAsUnread` | Tags `54335` / `54336` | Messaging | Dialog read status batch updates |
+| `messagePinned` / `messagesUnPinned` | Tags `54340` / `54341` | Messaging | Message pinned/unpinned |
+| `messageStreamChunks` | Tag `54351` | Messaging | Streaming text chunks (AI/bot streaming) |
+| `reaction` / `messageNewReaction` | Tags `222` / `52825` / `54323` | Reactions | Emoji reactions added/updated |
+| `messageReactionsReadByMe` | Tag `52832` | Reactions | Reactions marked as read |
+| `typing` / `typingStop` | Tags `6` / `81` | Presence | Typing indicators (text, audio, photo, file) |
+| `userOnline` / `userOffline` / `userLastSeen` | Tags `7` / `8` / `9` | Presence | Presence and lastSeen timestamps |
+| `presence` | Universal Alias | Presence | Any online/offline/lastSeen change |
+| `userAvatarChanged` / `userNameChanged` | Tags `16` / `32` | Users | Profile picture and display name |
+| `userLocalNameChanged` / `userContactsChanged` | Tags `51` / `134` | Users | Local contacts mapping |
+| `userNickChanged` / `userAboutChanged` | Tags `209` / `210` | Users | Username and bio changes |
+| `userBlocked` / `userUnblocked` | Tags `2629` / `2630` | Users | Block/unblock status |
+| `phoneNumberChanged` | Tag `52803` | Users | Account phone number changed |
+| `contactsAdded` / `contactsRemoved` | Tags `40` / `41` / `54353` | Users | Contact list additions/removals |
+| `groupOnline` / `groupNicknameChanged` | Tags `33` / `57` | Groups | Online count and group link |
+| `groupMessagePinned` / `groupPinRemoved` | Tags `721` / `722` | Groups | Group message pin management |
+| `groupRestrictionChanged` / `groupExtChanged` | Tags `723` / `2613` | Groups | Group restrictions and extension features |
+| `groupTitleChanged` / `groupAvatarChanged` | Tags `2609` / `2610` | Groups | Group title and avatar |
+| `groupMemberChanged` / `groupMembersUpdated` | Tags `2612` / `2614` | Groups | Member joined, left, kicked, promoted |
+| `groupOwnerChanged` / `groupHistoryShared` | Tags `2619` / `2620` | Groups | Owner transfer and history visibility |
+| `groupCanSendMessagesChanged` | Tag `2624` | Groups | Send message permissions (lock/unlock chat) |
+| `groupMemberAdminChanged` | Tag `2627` | Groups | Admin role privileges |
+| `slowModeChanged` | Tag `54355` | Groups | Slow mode interval changes |
+| `channelSignMessagesChanged` | Tag `54354` | Channels | Author signature toggle |
+| `channelAdvertisementTypeChanged` | Tag `52801` | Channels | Channel ad program status |
+| `callStarted` / `callAccepted` / `callDiscarded` | Tags `52807` / `52808` / `52809` | Calls | Voice/video call lifecycle |
+| `groupCallStarted` / `groupCallEnded` | Tags `52811` / `52812` | Calls | Group conference calls |
+| `call` | Universal Alias | Calls | Universal listener for all call events |
+| `giftPacket` | Custom | Gift Packet | Incoming cash gift packet message |
+| `goldGiftPacket` | Custom | Gift Packet | Incoming gold gift packet message |
+| `giftPacketOpened` | Service Ex 17/18 | Gift Packet | Notification of gift packet opened with amount |
+| `miniAppData` | Service Ex 21 | Mini App | Data payload returned from mini app to bot |
+| `connected` / `disconnected` / `status` / `error` | Runtime | Socket | Connection lifecycle events |
+| `update` | Universal | Universal | Raw incoming frame update |
 
 #### MessageEvent Helpers & Detection Properties:
 When the `message` event fires, the event object contains:
 - **Identification & Content**: `senderId`, `peer`, `date`, `randomId`, `text`, `rawMessage`, `isGroup`, `isOut`
-- **Content Type Boolean Flags**: `isPhoto`, `isVoice`, `isAudio`, `isVideo`, `isDocument`, `isSticker`, `isGiftPacket`, `isGoldGiftPacket`
-- **Submessage Objects**: `giftPacket` (cash gift packet info), `goldGiftPacket` (gold gift packet info)
+- **Content Type Boolean Flags**: `isPhoto`, `isVoice`, `isAudio`, `isVideo`, `isDocument`, `isSticker`, `isGiftPacket`, `isGoldGiftPacket`, `isService`
+- **Submessage Objects**: `giftPacket` (cash gift packet), `goldGiftPacket` (gold gift packet), `serviceMessage` (service extension)
 - **Convenience Actions**:
   - `await msg.reply(text, options)`: Sends reply with humanized reading and typing simulation
   - `await msg.markAsRead()`: Sends seen read receipt (double blue checkmarks)
@@ -182,8 +212,11 @@ When the `message` event fires, the event object contains:
   - `await msg.pin()`: Pins message in conversation
   - `await msg.delete()`: Deletes message
   - `await msg.forwardTo(toPeer)`: Forwards message to destination peer
-  - `await msg.openGiftPacket(walletId)`: Automatically claims/opens cash gift packet
-  - `await msg.openGoldGiftPacket()`: Automatically claims/opens gold gift packet
+  - `await msg.claimGiftPacket(walletId)` / `await msg.openGiftPacket(walletId)`: Claims/opens cash gift packet
+  - `await msg.getGiftPacket()`: Gets cash gift packet details and status
+  - `await msg.getGiftPacketReceivers(pageNo)`: Gets receivers of cash gift packet
+  - `await msg.claimGoldGiftPacket()` / `await msg.openGoldGiftPacket()`: Claims/opens gold gift packet
+  - `await msg.getGoldWinners()`: Gets winner user IDs of gold gift packet
 
 ---
 
@@ -339,6 +372,46 @@ await client.sendSticker(peer, stickerId, accessHash, stickerPackId);
 - **Send Inline Callback**: `await client.sendInlineCallback(peer, messageId, 'data');`
   - Dispatches `bale.ketf.v1.Ketf.SendInlineCallback`.
 
+### Gift Packets Operations (Cash & Gold):
+- **Send Cash Gift Packet**: `await client.sendGiftPacket({ peer, amount, count, message, givingType: 0 });`
+  - Dispatches `bale.giftpacket.v1.GiftPacket.SendGiftPacketWithWallet`.
+- **Claim / Open Cash Gift Packet**: `const claim = await client.claimGiftPacket({ peer, randomId, date, walletId });`
+  - Dispatches `bale.giftpacket.v1.GiftPacket.OpenGiftPacket`.
+- **Get Cash Gift Packet Details**: `const info = await client.getGiftPacket({ peer, randomId });`
+- **Get Cash Gift Packet Receivers**: `const receivers = await client.getGiftPacketReceivers({ peer, randomId });`
+- **Send Gold Gift Packet**: `await client.sendGoldGiftPacket({ peer, amountMilligrams: 100, count: 5, message });`
+  - Dispatches `bale.balebank.v1.GoldGiftPacket.SendGoldGiftPacket`.
+- **Claim / Open Gold Gift Packet**: `const gold = await client.claimGoldGiftPacket(packetId);`
+  - Dispatches `bale.balebank.v1.GoldGiftPacket.OpenGoldGiftPacket`.
+- **Get Gold Winners**: `const winners = await client.getGoldWinners(packetId);`
+  - Dispatches `bale.balebank.v1.GoldGiftPacket.GetWinnerIDs`.
+
+### Mini App & Parameter Engine Runbook:
+- **Generate initData & Launch URL**:
+  ```javascript
+  const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('bale-userbot');
+  // Create HMAC-SHA256 signed initData
+  const initData = MiniAppUtils.createInitData({ user, queryId, startParam, botToken });
+  // Validate signature on backend
+  const validation = MiniAppUtils.validateInitData(initData, botToken);
+  // Build launch URL with fragment
+  const url = MiniAppUtils.buildMiniAppUrl({ webAppUrl, initData, themeParams });
+  ```
+- **Fetch Official Mini App Launch URL with Server Signature**:
+  `const { url, queryId } = await client.getMiniAppUrl({ botUserId, screenMode: ScreenMode.FULLSCREEN, directLink });`
+  - Dispatches `bale.appzar.v1.Appzar.GetMiniAppUrl`.
+- **Create Launch Parameters with Server Hash**:
+  `const params = await client.createMiniAppParams(botUserId, { appUrl, startParam, platform: 'weba' });`
+- **Send Data from Mini App to Bot**:
+  `await client.sendMiniAppData({ botUserId, queryId, data, buttonText });`
+  - Dispatches `bale.ketf.v1.Ketf.SendMiniAppData`.
+- **Get Bot Menu Button**:
+  `const menu = await client.getBotMenuButton(botUserId);`
+  - Dispatches `bale.appzar.v1.Appzar.GetMenuButton`.
+- **Invoke Custom Method**:
+  `const res = await client.invokeMiniAppCustomMethod({ botUserId, method, params });`
+  - Dispatches `bale.appzar.v1.Appzar.InvokeCustomMethod`.
+
 ---
 
 ## 7. Dynamic RPC Dispatch for All 53 Services & 636 Methods
@@ -383,5 +456,109 @@ Automated bots on Bale are detected if they perform instant actions without simu
 | **`RangeError: 17..186: -9223372036854775792`** | `64-bit int overflow` in `safeLen` calculation and misinterpreting `accessHash` (int64 varint) as string length in `User` model. | Calculate `maxAvailable = buf.length - offset` and clamp `safeLen = min(length, maxAvailable)`. In `User` decoder, treat Field 2 as `int64` varint. |
 | **`PHONE_CODE_INVALID`** | Entering Persian digits `۰-۹` or dashes in SMS OTP. | Always run `BaleProto.normalizeCode(raw)` before gRPC dispatch. |
 | **`4401 onUnauthenticated`** | Connecting to WebSocket before logging in. | Only open WebSocket **after** receiving `jwt` and `uid` from `ValidateCode`. |
-| **UI Freeze on Android (2.3s doFrame)** | `GoogleFonts.vazirmatn()` attempting network HTTP download from `fonts.gstatic.com` (which is blocked inside Iran). | Set `GoogleFonts.config.allowRuntimeFetching = false;` or use local/bundled TTF assets with system font fallbacks. |
-| **Status Bar Clipping** | Top bar drawn under Android camera notch. | Wrap top header in `SafeArea(bottom: false)`. |
+| **`JSON struct tag backticks in Node.js templates`** | Struct tags containing unescaped backticks terminating template literals. | Always escape backticks (\`) inside Go struct definitions within JS files. |
+
+---
+
+## 10. Official Bale HTTP Bot API (https://docs.bale.ai/)
+
+In addition to userbots and the binary Protobuf protocol, the **BaleX** SDK (`balex`) provides complete, zero-dependency support for official **Bale Bots** created via `@botfather`.
+
+### 10.1 Key Architecture & Endpoints
+- **Base API URL**: `https://tapi.bale.ai/bot<token>/<method>`
+- **File Download URL**: `https://tapi.bale.ai/file/bot<token>/<file_path>`
+- **Methods Supported**: `GET` and `POST`
+- **Supported Encodings**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data` (for file uploads)
+
+### 10.2 Quick Start & Long Polling
+```javascript
+const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('balex');
+
+const bot = new BaleBot('123456789:abcdIuZmK5qNEm2A1BhUaAg7MPJv1O9KCcBQB2ro');
+
+// Listen for messages
+bot.on('message', async (msg) => {
+  if (msg.text === '/start') {
+    const kb = new InlineKeyboard()
+      .button('ثبت‌نام', 'btn_register')
+      .url('سایت بله', 'https://ble.ir')
+      .row()
+      .webApp('اجرای مینی‌اپ', 'https://app.example.com')
+      .copyText('کپی کد تخفیف', 'DISCOUNT2026');
+
+    await bot.sendMessage(msg.chat.id, 'سلام! به بازوی بله خوش آمدید.', {
+      reply_markup: kb
+    });
+  }
+});
+
+// Handle callback queries from inline buttons
+bot.on('callback_query', async (query) => {
+  await bot.answerCallbackQuery(query.id, { text: 'درخواست شما ثبت شد.' });
+});
+
+// Start receiving updates
+bot.startPolling({ interval: 300, timeout: 20 });
+```
+
+### 10.3 Complete List of 60 Official Bale Bot API Methods
+All 60 official methods from `https://docs.bale.ai/` are natively available on `BaleBot`:
+
+| Category | Methods |
+| :--- | :--- |
+| **Bot Lifecycle & Polling** | `getMe()`, `logout()`, `close()`, `getUpdates(options)`, `setWebhook(urlOrOptions)`, `deleteWebhook()`, `getWebhookInfo()`, `startPolling(options)`, `stopPolling()`, `createWebhookMiddleware(options)` |
+| **Send Messages & Media** | `sendMessage(chatId, text, options)`, `forwardMessage(chatId, fromChatId, messageId)`, `copyMessage(chatId, fromChatId, messageId, options)`, `sendPhoto(chatId, photo, options)`, `sendAudio(chatId, audio, options)`, `sendDocument(chatId, document, options)`, `sendVideo(chatId, video, options)`, `sendAnimation(chatId, animation, options)`, `sendVoice(chatId, voice, options)`, `sendMediaGroup(chatId, media)`, `sendLocation(chatId, lat, lon, options)`, `sendContact(chatId, phone, firstName, options)`, `sendChatAction(chatId, action)` |
+| **File Management** | `getFile(fileId)`, `downloadFile(fileIdOrPath, destinationPath)` |
+| **Inline & Reviews** | `answerCallbackQuery(callbackQueryId, options)`, `askReview(chatId)` |
+| **Edit & Delete** | `editMessageText(chatId, messageId, text, options)`, `editMessageCaption(chatId, messageId, caption, options)`, `editMessageReplyMarkup(chatId, messageId, replyMarkup)`, `deleteMessage(chatId, messageId)` |
+| **Chat Administration** | `banChatMember(chatId, userId)`, `unbanChatMember(chatId, userId)`, `promoteChatMember(chatId, userId, options)`, `setChatPhoto(chatId, photo)`, `deleteChatPhoto(chatId)`, `setChatTitle(chatId, title)`, `setChatDescription(chatId, desc)`, `pinChatMessage(chatId, messageId)`, `unpinChatMessage(chatId, messageId)`, `unpinAllChatMessages(chatId)`, `leaveChat(chatId)`, `getChat(chatId)`, `getChatAdministrators(chatId)`, `getChatMembersCount(chatId)`, `getChatMember(chatId, userId)`, `createChatInviteLink(chatId)`, `revokeChatInviteLink(chatId, inviteLink)`, `exportChatInviteLink(chatId)` |
+| **Sticker Sets** | `uploadStickerFile(userId, pngSticker)`, `createNewStickerSet(userId, name, title, pngSticker, emojis)`, `addStickerToSet(userId, name, pngSticker, emojis)` |
+| **Electronic Wallet & Payments** | `sendInvoice(chatId, title, desc, payload, providerToken, currency, prices, options)`, `createInvoiceLink(title, desc, payload, providerToken, currency, prices, options)`, `answerPreCheckoutQuery(preCheckoutQueryId, ok, errorMessage)`, `inquireTransaction(transactionId)` |
+
+---
+
+## 11. Go (Golang) Integration & IPC Bridge Runbook
+
+The library can be driven directly from **Go (Golang)** backends using two methods:
+
+### 11.1 STDIO Streaming IPC (Subprocess Execution)
+Spawns Node as a child process via `os/exec` with zero network overhead:
+```go
+cmd := exec.Command("node", "src/bridge.js", "--stdio")
+stdin, _ := cmd.StdinPipe()
+stdout, _ := cmd.StdoutPipe()
+_ = cmd.Start()
+
+// Send JSON-RPC line
+req, _ := json.Marshal(map[string]interface{}{
+    "id": 1,
+    "action": "call",
+    "method": "sendMessage",
+    "params": []interface{}{123456789, "Hello from Go!"},
+})
+stdin.Write(append(req, '\n'))
+```
+
+### 11.2 HTTP / JSON-RPC Bridge Server
+Run the bridge daemon:
+```bash
+npx balex bridge --port 8765
+```
+Send HTTP requests from Go:
+```go
+resp, err := http.Post("http://127.0.0.1:8765/api/call", "application/json", bytes.NewBuffer(body))
+```
+
+---
+
+## 12. Userbot vs Official Bot: Architecture Comparison
+
+| Feature | `BaleClient` (Userbot / Protobuf) | `BaleBot` (Official Bot / HTTP API) |
+| :--- | :--- | :--- |
+| **Package Name** | `balex` (`require('balex')`) | `balex` (`require('balex')`) |
+| **Authentication** | Phone number + SMS OTP (`StartPhoneAuth`) | Bot token from `@botfather` |
+| **Protocol** | Binary Protobuf over WebSocket & gRPC-Web | JSON / Multipart over HTTPS |
+| **Endpoints** | `maviz-ws.bale.ai` / `next-ws.bale.ai` | `tapi.bale.ai/bot<token>/` |
+| **Capabilities** | Personal account automation, Shetab banking, Cash & Gold gift packets, Group/Channel management, 53 raw Protobuf services | Verified official bots, Payments/Invoices, Webhook support, Inline keyboards |
+| **Updates** | Real-time WebSocket multiplexed events (60+ events) | Long Polling (`getUpdates`) or Webhooks |
+

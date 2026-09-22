@@ -113,19 +113,19 @@
 برای نصب کتابخانه مستقیماً از روی ریپازیتوری گیت‌هاب:
 ```bash
 # نصب با شناسه گیت‌هاب
-npm install github:Zellias/bale-userbot
+npm install github:Zellias/balex
 
 # یا با آدرس کامل گیت
-npm install git+https://github.com/Zellias/bale-userbot.git
+npm install git+https://github.com/Zellias/balex.git
 
 # یا با Yarn و pnpm
-pnpm add github:Zellias/bale-userbot
-yarn add github:Zellias/bale-userbot
+pnpm add github:Zellias/balex
+yarn add github:Zellias/balex
 ```
 
 ### روش ۲: نصب از طریق npm
 ```bash
-npm install bale-userbot
+npm install balex
 ```
 
 ---
@@ -1288,7 +1288,7 @@ func main() {
 
 ```bash
 # اجرای پل ارتباطی در پس‌زمینه
-npx bale-userbot bridge --port 8765
+npx balex bridge --port 8765
 ```
 
 سپس در زبان Go با پکیج استاندارد `net/http`:
