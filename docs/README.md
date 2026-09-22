@@ -2,14 +2,14 @@
 
 # 🚀 BaleX — کتابخانه جامع پروتکل رسمی بله
 
-[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/exactslash/balex)
-[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/exactslash/balex)
-[![Language](https://img.shields.io/badge/language-Persian%20(فارسی)-10B981.svg?style=for-the-badge)](https://github.com/exactslash/balex)
-[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20Flutter%20%7C%20Dart-F59E0B.svg?style=for-the-badge)](https://github.com/exactslash/balex)
+[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20TypeScript%20%7C%20Go-F59E0B.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-**پیاده‌سازی مستقل، پرسرعت و خالص پروتکل باینری پیام‌رسان بله بدون نیاز به مرورگر، همراه با پشتیبانی از سیستم مالی کارت‌به‌کارت و موتور رفتار انسانی ضد مسدودی (Stealth).**
+**پیاده‌سازی مستقل، پرسرعت و خالص پروتکل باینری پیام‌رسان بله و Bot API رسمی، بدون نیاز به مرورگر یا گوشی، همراه با پشتیبانی از سیستم مالی کارت‌به‌کارت، موتور ضد مسدودی و قابلیت اجرای مستقیم از زبان Go (Golang).**
 
-[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://exactslash.github.io/web.bale.ai/)
+[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://zellias.github.io/bale-userbot/)
 
 ---
 
@@ -20,7 +20,7 @@
 ## 📑 فهرست مطالب
 1. [معرفی کتابخانه BaleX](#-معرفی-کتابخانه-balex)
 2. [ویژگی‌های کلیدی](#-ویژگیهای-کلیدی)
-3. [نصب و پیش‌نیازها](#-نصب-و-پیشنیازها)
+3. [نصب و پیش‌نیازها (از جمله گیت‌هاب)](#-نصب-و-پیشنیازها)
 4. [شروع سریع (Quickstart)](#-شروع-سریع-quickstart)
 5. [احراز هویت و ورود (Authentication)](#-احراز-هویت-و-ورود-authentication)
    - [ارسال کد تایید (StartPhoneAuth)](#۱-ارسال-کد-تایید-پیامکی)
@@ -92,39 +92,40 @@
 17. [کاتالوگ کامل ۵۳ سرویس و ۶۳۶ متد بله (Dynamic RPC Proxy)](#-کاتالوگ-کامل-۵۳-سرویس-و-۶۳۶-متد-بله)
 18. [معماری فریم‌های پروتکل (Wire Protocol)](#-معماری-فریمهای-پروتکل-wire-protocol)
 19. [جدول کدهای خطای سرور بله (Error Handling)](#-جدول-کدهای-خطای-سرور-بله)
+20. [بازوهای رسمی بله (Official Bale HTTP Bot API - docs.bale.ai)](#-بازوهای-رسمی-بله-official-bale-http-bot-api)
+21. [اتصال و اجرا در زبان Go (Golang Integration)](#-اتصال-و-اجرا-در-زبان-go-golang-integration)
 
 ---
 
 ## 🌟 معرفی کتابخانه BaleX
-کتابخانه **BaleX** با مهندسی معکوس و استخراج کامل پروتکل رسمی کلاینت بله (`web.bale.ai`) ساخته شده است. این ابزار به توسعه‌دهندگان اجازه می‌دهد انواع ربات‌های هوشمند، یوزربات‌های اتوماسیون سازمانی، کلاینت‌های سفارشی دسکتاپ و موبایل، و سامانه‌های دریافت و ارسال گزارش مالی و تراکنش بانکی را پیاده‌سازی کنند.
+کتابخانه **BaleX** با مهندسی معکوس و استخراج کامل پروتکل رسمی کلاینت بله (`web.bale.ai`) ساخته شده است. این ابزار به توسعه‌دهندگان اجازه می‌دهد انواع ربات‌های هوشمند، یوزربات‌های اتوماسیون سازمانی سمت سرور، سامانه‌های دریافت و ارسال گزارش مالی، تراکنش بانکی و بات‌های رسمی را بدون نیاز به گوشی، شبیه‌ساز یا مرورگر پیاده‌سازی کنند.
 
 ### مزایای اصلی:
-- **عدم نیاز به مرورگر**: برخلاف سلنیوم و Puppeteer که نیازمند باز کردن مرورگر و مصرف بالای پردازنده و رم هستند، BaleX به شکل مستقیم با بسته‌های باینری Protobuf تبادل پکت می‌کند.
-- **پشتیبانی دوگانه**: قابل استفاده هم به صورت پکیج **Node.js** و هم در قالب کتابخانه **Flutter / Dart**.
-- **پایداری بالا**: استفاده از لایه gRPC-Web HTTP POST برای درخواست‌های حساس (لاگین و احراز هویت) و WebSocket برای استریم بلادرنگ پیام‌ها.
+- **عدم نیاز به مرورگر یا گوشی**: بدون باز کردن مرورگر و بدون نیاز به گوشی روشن، بسته‌های باینری Protobuf را با سرورهای بله تبادل می‌کند.
+- **پشتیبانی از سرور و Go**: قابل اجرا در **Node.js** و همچنین اتصال و فراخوانی بلادرنگ از طریق زبان **Go (Golang)** با پل ارتباطی IPC (STDIO) و HTTP REST.
+- **پایداری بالا**: استفاده از لایه gRPC-Web HTTP POST برای درخواست‌های حساس و WebSocket برای استریم بلادرنگ پیام‌ها.
 
 ---
 
 ## 📦 نصب و پیش‌نیازها
 
-### در محیط Node.js / TypeScript:
+### روش ۱: نصب مستقیم از گیت‌هاب (GitHub)
+برای نصب کتابخانه مستقیماً از روی ریپازیتوری گیت‌هاب:
 ```bash
-npm install balex
-# یا
-yarn add balex
-# یا
-pnpm add balex
+# نصب با شناسه گیت‌هاب
+npm install github:Zellias/bale-userbot
+
+# یا با آدرس کامل گیت
+npm install git+https://github.com/Zellias/bale-userbot.git
+
+# یا با Yarn و pnpm
+pnpm add github:Zellias/bale-userbot
+yarn add github:Zellias/bale-userbot
 ```
 
-### در محیط Flutter / Dart:
-فایل `pubspec.yaml` را باز کرده و وابستگی را اضافه کنید:
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  balex: ^1.2.0
-  web_socket_channel: ^3.0.1
-  http: ^1.2.2
+### روش ۲: نصب از طریق npm
+```bash
+npm install bale-userbot
 ```
 
 ---
@@ -709,7 +710,7 @@ await client.deleteFolder(folderId);
 // ارسال نظرسنجی در گروه یا کانال
 await client.sendPoll(peerId, 'کدام زبان برنامه‌نویسی را ترجیح می‌دهید؟', [
   'JavaScript / Node.js',
-  'Dart / Flutter',
+  'Go (Golang)',
   'Python'
 ], {
   isAnonymous: true,
@@ -1144,6 +1145,181 @@ const res = await client.invoke('bale.presence.v1.Presence', 'SetOnline', {
 | `FLOOD_WAIT` | تعداد درخواست فراتر از حد مجاز است | انتظار خودکار مطابق زمان اعلامی سرور |
 | `INVALID_PAN` | شماره کارت مقصد نامعتبر است | اعتبارسنجی الگوریتم Luhn پیش از استعلام |
 | `4401 onUnauthenticated` | نشست سوکت منقضی شده است | تمدید خودکار توکن JWT با متد Refresh |
+
+---
+
+## 🤖 بازوهای رسمی بله (Official Bale HTTP Bot API)
+
+علاوه بر یوزربات و پروتکل باینری، این کتابخانه شامل پشتیبانی ۱۰۰٪ بومی و صفر وابستگی از **API رسمی بازوهای بله ([docs.bale.ai](https://docs.bale.ai/))** است.
+
+### راه‌اندازی سریع با Long Polling
+```javascript
+const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('bale-userbot');
+
+// مقداردهی با توکن دریافت شده از botfather@ در بله
+const bot = new BaleBot('123456789:abcdIuZmK5qNEm2A1BhUaAg7MPJv1O9KCcBQB2ro');
+
+// دریافت و پاسخ به پیام‌ها
+bot.on('message', async (msg) => {
+  if (msg.text === '/start') {
+    const kb = new InlineKeyboard()
+      .button('ثبت‌نام', 'btn_register')
+      .url('وب‌سایت بله', 'https://ble.ir')
+      .row()
+      .webApp('مینی‌اپ فروشگاه', 'https://app.example.com')
+      .copyText('کپی کد معرف', 'BALE2026');
+
+    await bot.sendMessage(msg.chat.id, 'سلام! به بازوی بله خوش آمدید.', {
+      reply_markup: kb
+    });
+  }
+});
+
+// کلیک دکمه‌های اینلاین
+bot.on('callback_query', async (query) => {
+  await bot.answerCallbackQuery(query.id, { text: 'عملیات با موفقیت ثبت شد.' });
+});
+
+// شروع دریافت رویدادها
+bot.startPolling({ interval: 300, timeout: 20 });
+```
+
+### پرداخت و کیف‌پول الکترونیکی بله (Electronic Wallet Invoices)
+```javascript
+// ارسال فاکتور پرداخت به کاربر
+await bot.sendInvoice(
+  chatId,
+  'اشتراک ویژه بازو',
+  'دسترسی یک‌ماهه به امکانات پرمیوم',
+  'order_vip_30days',
+  'PROVIDER_TOKEN',
+  'IRR',
+  [{ label: 'هزینه اشتراک', amount: 150000 }]
+);
+
+// تایید پیش از پرداخت (PreCheckoutQuery)
+bot.on('pre_checkout_query', async (query) => {
+  await bot.answerPreCheckoutQuery(query.id, true);
+});
+
+// دریافت رویداد پرداخت موفق
+bot.on('successful_payment', async (payment, msg) => {
+  console.log('پرداخت تایید شد:', payment.total_amount, payment.invoice_payload);
+});
+```
+
+### استقرار به صورت وب‌هوک (Webhook)
+```javascript
+const http = require('http');
+
+// ثبت آدرس وب‌هوک در سرور بله
+await bot.setWebhook('https://bot.example.com/bale-webhook');
+
+// اتصال میدلور به سرور Express یا Node.js HTTP
+const webhookHandler = bot.createWebhookMiddleware({ secretToken: 'MY_SECRET' });
+http.createServer((req, res) => {
+  if (req.url === '/bale-webhook') return webhookHandler(req, res);
+  res.writeHead(404).end();
+}).listen(443);
+```
+
+---
+
+## 🐹 اتصال و اجرا در زبان Go (Golang Integration)
+
+کتابخانه BaleX دارای پل ارتباطی داخلی (Bridge) به دو صورت **STDIO Stream** (برای اجرای مستقیم به عنوان Subprocess) و **HTTP JSON-RPC** (برای اتصال میکروسرویسی) می‌باشد:
+
+### روش ۱: اجرای مستقیم از Go به عنوان Child Process (تاخیر صفر، بدون اشغال پورت)
+
+```go
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"os/exec"
+)
+
+type Command struct {
+	ID     int         `json:"id"`
+	Action string      `json:"action"`
+	Method string      `json:"method,omitempty"`
+	Params interface{} `json:"params,omitempty"`
+}
+
+type Response struct {
+	ID      int             `json:"id"`
+	Success bool            `json:"success"`
+	Result  json.RawMessage `json:"result"`
+	Error   string          `json:"error,omitempty"`
+}
+
+func main() {
+	// اجرای پل ارتباطی به عنوان زیرپروسس
+	cmd := exec.Command("node", "src/bridge.js", "--stdio")
+	stdin, _ := cmd.StdinPipe()
+	stdout, _ := cmd.StdoutPipe()
+	_ = cmd.Start()
+	reader := bufio.NewReader(stdout)
+
+	// رویداد اولیه اتصال
+	initMsg, _ := reader.ReadBytes('\n')
+	fmt.Println("Bridge ready:", string(initMsg))
+
+	// ارسال متد sendMessage به بله
+	cmdData, _ := json.Marshal(Command{
+		ID:     1,
+		Action: "call",
+		Method: "sendMessage",
+		Params: []interface{}{123456789, "سلام از برنامه نوشته شده با Go!"},
+	})
+	stdin.Write(append(cmdData, '\n'))
+
+	// خواندن پاسخ
+	respLine, _ := reader.ReadBytes('\n')
+	var resp Response
+	json.Unmarshal(respLine, &resp)
+	fmt.Printf("نتیجه بازگشتی در Go: %+v\n", resp)
+}
+```
+
+### روش ۲: اجرای دائم به عنوان پل HTTP
+
+```bash
+# اجرای پل ارتباطی در پس‌زمینه
+npx bale-userbot bridge --port 8765
+```
+
+سپس در زبان Go با پکیج استاندارد `net/http`:
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	payload, _ := json.Marshal(map[string]interface{}{
+		"method": "sendMessage",
+		"params": []interface{}{
+			123456789,
+			"ارسال پیام مستقیم از سرور Go به بله",
+		},
+	})
+
+	resp, err := http.Post("http://127.0.0.1:8765/api/call", "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	fmt.Println("وضعیت ارسال HTTP:", resp.Status)
+}
+```
 
 ---
 

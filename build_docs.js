@@ -1047,6 +1047,21 @@ const html = `<!DOCTYPE html>
         <a href="#errors-table" class="sidebar-link">جدول خطاهای سرور بله</a>
         <a href="#faq" class="sidebar-link">سوالات متداول (FAQ)</a>
       </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">موتور حضور و ضد مسدودی</div>
+        <a href="#presence-controls" class="sidebar-link">وضعیت آنلاین و تایپینگ (Presence)</a>
+        <a href="#stealth-controls" class="sidebar-link">کنترل رفتار انسانی (Humanize)</a>
+        <a href="#stealth-engine" class="sidebar-link">معماری ضد مسدودی</a>
+        <a href="#anti-ban-tips" class="sidebar-link">نکات طلایی ضد بن</a>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">اتصال و اجرا با Go (Golang)</div>
+        <a href="#go-overview" class="sidebar-link">ارتباط کتابخانه با Go</a>
+        <a href="#go-stdio-bridge" class="sidebar-link">پل پرسرعت STDIO (os/exec)</a>
+        <a href="#go-http-bridge" class="sidebar-link">پل HTTP میکرو‌سرویس</a>
+      </div>
     </aside>
 
     <!-- محتوای اصلی داکیومنت -->
@@ -1056,7 +1071,7 @@ const html = `<!DOCTYPE html>
       <section id="intro">
         <h1>کتابخانه پروتکل رسمی BaleX</h1>
         <p class="lead-text">
-          کتابخانه <strong>BaleX</strong> یک پیاده‌سازی مستقل، سبک، مدرن و فوق‌العاده سریع از پروتکل ارتباطی پیام‌رسان بله (Bale Messenger) به صورت باینری (Protobuf / gRPC-Web / WebSocket) است که هم در محیط <strong>Node.js</strong> و هم در <strong>Flutter / Dart</strong> قابل استفاده می‌باشد.
+          کتابخانه <strong>BaleX</strong> یک پیاده‌سازی مستقل، سبک، مدرن و فوق‌العاده سریع از پروتکل ارتباطی پیام‌رسان بله (Bale Messenger) سمت سرور بر پایه باینری (Protobuf / gRPC-Web / WebSocket) و بات رسمی بله (docs.bale.ai) است که در محیط <strong>Node.js / TypeScript</strong> پیاده‌سازی شده و از اتصال و اجرای مستقیم از طریق زبان <strong>Go (Golang)</strong> به طور کامل پشتیبانی می‌کند.
         </p>
 
         <div class="callout callout-tip">
@@ -1097,37 +1112,31 @@ const html = `<!DOCTYPE html>
 
       <!-- بخش ۳: نصب و راه‌اندازی -->
       <section id="installation">
-        <h2>نصب و راه‌اندازی</h2>
-        <p>شما می‌توانید بسته BaleX را بر روی پروژه‌های نودجی‌اس یا فلاتر به سادگی نصب نمایید:</p>
-
-        <h3>نصب در Node.js / TypeScript</h3>
+        <h3>روش ۱: نصب مستقیم از گیت‌هاب (GitHub)</h3>
+        <p>شما می‌توانید این کتابخانه را مستقیماً از مخزن گیت‌هاب بر روی پروژه خود نصب نمایید:</p>
         <div class="code-wrapper">
           <div class="code-header">
             <span>Terminal</span>
             <button class="btn-copy" onclick="copyCode(this)">کپی</button>
           </div>
-          <pre><code class="language-bash"># نصب با npm
-npm install balex
+          <pre><code class="language-bash"># نصب با نام کاربری و مخزن گیت‌هاب
+npm install github:Zellias/bale-userbot
 
-# یا نصب با yarn
-yarn add balex
+# یا نصب با آدرس کامل Git (HTTPS)
+npm install git+https://github.com/Zellias/bale-userbot.git
 
-# یا نصب با pnpm
-pnpm add balex</code></pre>
+# یا با Yarn و pnpm
+pnpm add github:Zellias/bale-userbot
+yarn add github:Zellias/bale-userbot</code></pre>
         </div>
 
-        <h3>نصب در Flutter / Dart</h3>
+        <h3>روش ۲: نصب از طریق رجیستری npm</h3>
         <div class="code-wrapper">
           <div class="code-header">
-            <span>pubspec.yaml</span>
+            <span>Terminal</span>
             <button class="btn-copy" onclick="copyCode(this)">کپی</button>
           </div>
-          <pre><code class="language-yaml">dependencies:
-  flutter:
-    sdk: flutter
-  balex: ^1.2.0
-  web_socket_channel: ^3.0.1
-  http: ^1.2.2</code></pre>
+          <pre><code class="language-bash">npm install bale-userbot</code></pre>
         </div>
       </section>
 
@@ -1219,16 +1228,6 @@ console.log('اتصال قطع شد. وضعیت:', client.isConnected); // false
 const res = await client.sendCode('09372570490');
 console.log('کد پیامک شد. شناسه تراکنش:', res.transactionHash);</code></pre>
         </div>
-
-        <div class="code-wrapper">
-          <div class="code-header">
-            <span>Dart / Flutter</span>
-            <button class="btn-copy" onclick="copyCode(this)">کپی</button>
-          </div>
-          <pre><code class="language-dart">final client = BaleSocketClient();
-final txHash = await client.startPhoneAuth('09372570490');
-print('شناسه تراکنش: $txHash');</code></pre>
-        </div>
       </section>
 
       <section id="auth-validate">
@@ -1254,19 +1253,6 @@ print('شناسه تراکنش: $txHash');</code></pre>
     console.error('خطای ورود:', error.message);
   }
 }</code></pre>
-        </div>
-
-        <div class="code-wrapper">
-          <div class="code-header">
-            <span>Dart / Flutter</span>
-            <button class="btn-copy" onclick="copyCode(this)">کپی</button>
-          </div>
-          <pre><code class="language-dart">final res = await client.validateCode(
-  code: '15011',
-  transactionHash: txHash,
-);
-print('خوش آمدید: \${res.name} (شناسه: \${res.id})');
-print('توکن احراز هویت: \${res.jwt}');</code></pre>
         </div>
       </section>
 
@@ -3192,13 +3178,139 @@ const res2 = await client.invoke('bale.users.v1.Users', 'LoadFullUsers', {
         <h2>سوالات متداول (FAQ)</h2>
         
         <h3>آیا استفاده از این کتابخانه نیاز به دسترسی روت یا گوشی روشن دارد؟</h3>
-        <p>خیر، کتابخانه BaleX کامپوننتی مستقل است و بر روی هر سیستم‌عامل (ویندوز، لینوکس، مک، سرور ابری، اندروید و iOS) بدون نیاز به نصب اپ رسمی بله کار می‌کند.</p>
+        <p>خیر، کتابخانه BaleX کامپوننتی مستقل و سمت سرور است و بر روی هر سرور لینوکس، مک، ویندوز و کانتینرهای داکر بدون نیاز به گوشی روشن، شبیه‌ساز یا مرورگر کار می‌کند.</p>
 
-        <h3>چگونه می‌توان روی سرور ایران هاست کرد؟</h3>
-        <p>کافیست یک پروژه نودجی‌اس با دستور <code>npm install balex</code> روی سرور ایجاد نموده و فایل اسکریپت خود را با <code>pm2</code> اجرا نگه دارید.</p>
+        <h3>چگونه می‌توان روی سرور لینوکس هاست کرد؟</h3>
+        <p>کافیست با دستور <code>npm install github:Zellias/bale-userbot</code> کتابخانه را نصب کرده و آن را با <code>pm2</code> یا به صورت سرویس <code>systemd</code> اجرا نگه دارید.</p>
 
         <h3>آیا با تغییر آی‌پی سشن باطل می‌شود؟</h3>
         <p>خیر، سشن بله متصل به توکن JWT است و تا زمانی که خروج از حساب نزده باشید یا از طریق اپلیکیشن سشن را لغو نکرده باشید، برای ماه‌ها پایدار می‌ماند.</p>
+      </section>
+
+      <!-- بخش اتصال و اجرای کتابخانه در زبان Go (Golang) -->
+      <section id="go-overview">
+        <h2>اتصال و اجرا از طریق زبان Go (Golang)</h2>
+        <p>
+          اگر پروژه یا سرور اصلی شما به زبان <strong>Go (Golang)</strong> نوشته شده است، می‌توانید از قابلیت پل ارتباطی پرسرعت (IPC / HTTP Bridge) کتابخانه برای ارسال دستورات و دریافت رویدادها استفاده کنید.
+        </p>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            دو روش اتصال از Go:
+          </div>
+          ۱. <strong>پل پرسرعت STDIO (os/exec)</strong>: اجرای مستقیم به صورت زیرپروسس با تاخیر صفر نانوثانیه‌ای و بدون اشغال پورت شبکه.<br/>
+          ۲. <strong>پل سرور HTTP / JSON-RPC</strong>: برقراری ارتباط از طریق ارسال درخواست‌های استاندارد HTTP REST به صورت میکروسرویس مستقل.
+        </div>
+      </section>
+
+      <section id="go-stdio-bridge">
+        <h3>روش اول: اجرای مستقیم از Go با Subprocess (STDIO)</h3>
+        <p>کد کامل زبان Go برای اجرای پروسس و ارسال دستورات بدون نیاز به وب‌سرور:</p>
+
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>Go (Golang)</span>
+            <button class="btn-copy" onclick="copyCode(this)">کپی</button>
+          </div>
+          <pre><code class="language-go">package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"os/exec"
+)
+
+type Request struct {
+	ID     int         \`json:"id"\`
+	Action string      \`json:"action"\`
+	Method string      \`json:"method,omitempty"\`
+	Token  string      \`json:"token,omitempty"\`
+	Params interface{} \`json:"params,omitempty"\`
+}
+
+type Response struct {
+	ID      int             \`json:"id"\`
+	Success bool            \`json:"success"\`
+	Result  json.RawMessage \`json:"result"\`
+	Error   string          \`json:"error,omitempty"\`
+}
+
+func main() {
+	// اجرای پل ارتباطی به عنوان Child Process
+	cmd := exec.Command("node", "src/bridge.js", "--stdio")
+	stdin, _ := cmd.StdinPipe()
+	stdout, _ := cmd.StdoutPipe()
+	_ = cmd.Start()
+	reader := bufio.NewReader(stdout)
+
+	// خواندن پیام اولیه آماده‌باش
+	initLine, _ := reader.ReadBytes('\n')
+	fmt.Println("Bridge ready:", string(initLine))
+
+	// ارسال دستور به کتابخانه
+	req, _ := json.Marshal(Request{
+		ID:     1,
+		Action: "call",
+		Method: "sendMessage",
+		Params: []interface{}{123456789, "سلام از Go!"},
+	})
+	stdin.Write(append(req, '\n'))
+
+	// دریافت پاسخ
+	resLine, _ := reader.ReadBytes('\n')
+	var resp Response
+	json.Unmarshal(resLine, &resp)
+	fmt.Printf("نتیجه اجرای متد در Go: %+v\n", resp)
+}</code></pre>
+        </div>
+      </section>
+
+      <section id="go-http-bridge">
+        <h3>روش دوم: اجرای دائم به عنوان پل HTTP</h3>
+        <p>ابتدا پل را در پس‌زمینه با دستور زیر اجرا کنید:</p>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>Terminal</span>
+            <button class="btn-copy" onclick="copyCode(this)">کپی</button>
+          </div>
+          <pre><code class="language-bash"># اجرای سرور پل ارتباطی روی پورت ۸۷۶۵
+npx bale-userbot bridge --port 8765</code></pre>
+        </div>
+
+        <p>سپس در هر پروژه Go با پکیج استاندارد <code>net/http</code> به آن متصل شوید:</p>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>Go (Golang)</span>
+            <button class="btn-copy" onclick="copyCode(this)">کپی</button>
+          </div>
+          <pre><code class="language-go">package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	payload, _ := json.Marshal(map[string]interface{}{
+		"method": "sendMessage",
+		"params": []interface{}{
+			123456789, // شناسه کاربر یا گروه
+			"پیام خودکار ارسال شده از سرور Go",
+		},
+	})
+
+	resp, err := http.Post("http://127.0.0.1:8765/api/call", "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	fmt.Println("وضعیت ارسال HTTP:", resp.Status)
+}</code></pre>
+        </div>
       </section>
 
     </main>
@@ -3266,6 +3378,9 @@ const res2 = await client.invoke('bale.users.v1.Users', 'LoadFullUsers', {
         <li class="toc-item"><a href="#services-explorer">جستجوگر ۶۳۶ متد</a></li>
         <li class="toc-item"><a href="#errors-table">جدول خطاهای سرور</a></li>
         <li class="toc-item"><a href="#faq">سوالات متداول</a></li>
+        <li class="toc-item"><a href="#go-overview">ارتباط با Go (Golang)</a></li>
+        <li class="toc-item"><a href="#go-stdio-bridge">پل STDIO در Go</a></li>
+        <li class="toc-item"><a href="#go-http-bridge">پل HTTP در Go</a></li>
       </ul>
     </aside>
 
@@ -3279,7 +3394,7 @@ const res2 = await client.invoke('bale.users.v1.Users', 'LoadFullUsers', {
   <!-- اسکریپت‌های تعاملی و دیتا -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-dart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
 

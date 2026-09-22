@@ -2,14 +2,14 @@
 
 # 🚀 BaleX — کتابخانه جامع پروتکل رسمی بله
 
-[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/exactslash/balex)
-[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/exactslash/balex)
-[![Language](https://img.shields.io/badge/language-Persian%20(فارسی)-10B981.svg?style=for-the-badge)](https://github.com/exactslash/balex)
-[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20Flutter%20%7C%20Dart-F59E0B.svg?style=for-the-badge)](https://github.com/exactslash/balex)
+[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20TypeScript%20%7C%20Go-F59E0B.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-**پیاده‌سازی مستقل، پرسرعت و خالص پروتکل باینری پیام‌رسان بله بدون نیاز به مرورگر، همراه با پشتیبانی از سیستم مالی کارت‌به‌کارت و موتور رفتار انسانی ضد مسدودی (Stealth).**
+**پیاده‌سازی مستقل، پرسرعت و خالص پروتکل باینری پیام‌رسان بله و Bot API رسمی، بدون نیاز به مرورگر یا گوشی، همراه با پشتیبانی از سیستم مالی کارت‌به‌کارت، موتور ضد مسدودی و قابلیت اجرای مستقیم از زبان Go (Golang).**
 
-[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://exactslash.github.io/web.bale.ai/)
+[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://zellias.github.io/bale-userbot/)
 
 ---
 
@@ -20,7 +20,7 @@
 ## 📑 فهرست مطالب
 1. [معرفی کتابخانه BaleX](#-معرفی-کتابخانه-balex)
 2. [ویژگی‌های کلیدی](#-ویژگیهای-کلیدی)
-3. [نصب و پیش‌نیازها](#-نصب-و-پیشنیازها)
+3. [نصب و پیش‌نیازها (از جمله گیت‌هاب)](#-نصب-و-پیشنیازها)
 4. [شروع سریع (Quickstart)](#-شروع-سریع-quickstart)
 5. [احراز هویت و ورود (Authentication)](#-احراز-هویت-و-ورود-authentication)
    - [ارسال کد تایید (StartPhoneAuth)](#۱-ارسال-کد-تایید-پیامکی)
@@ -29,7 +29,7 @@
    - [ذخیره و بازیابی نشست (Session Persistence)](#۴-ذخیره-و-بازیابی-نشست)
 6. [پیام‌رسانی و رویدادهای زنده (Messaging)](#-پیامرسانی-و-رویدادهای-زنده-messaging)
    - [ارسال پیام ساده و ریپلای](#ارسال-پیام-ساده-و-پاسخ-reply)
-   - [دریافت رویدادهای زنده (WebSocket Updates)](#دریافت-رویدادها-و-پیامهای-زنده)
+   - [کاتالوگ جامع رویدادهای زنده سوکت (۶۰+ رویداد)](#سامانه-جامع-رویدادها-و-کاتالوگ-۶۰-رویداد-زنده-سوکت)
    - [دریافت لیست گفتگوها (LoadDialogs)](#دریافت-لیست-گفتگوها-loaddialogs)
    - [تاریخچه پیام‌ها (LoadHistory)](#دریافت-تاریخچه-گفتگو-loadhistory)
 7. [ارسال چندرسانه‌ای (Media Messaging)](#-ارسال-چندرسانهای-media-messaging)
@@ -92,39 +92,40 @@
 17. [کاتالوگ کامل ۵۳ سرویس و ۶۳۶ متد بله (Dynamic RPC Proxy)](#-کاتالوگ-کامل-۵۳-سرویس-و-۶۳۶-متد-بله)
 18. [معماری فریم‌های پروتکل (Wire Protocol)](#-معماری-فریمهای-پروتکل-wire-protocol)
 19. [جدول کدهای خطای سرور بله (Error Handling)](#-جدول-کدهای-خطای-سرور-بله)
+20. [بازوهای رسمی بله (Official Bale HTTP Bot API - docs.bale.ai)](#-بازوهای-رسمی-بله-official-bale-http-bot-api)
+21. [اتصال و اجرا در زبان Go (Golang Integration)](#-اتصال-و-اجرا-در-زبان-go-golang-integration)
 
 ---
 
 ## 🌟 معرفی کتابخانه BaleX
-کتابخانه **BaleX** با مهندسی معکوس و استخراج کامل پروتکل رسمی کلاینت بله (`web.bale.ai`) ساخته شده است. این ابزار به توسعه‌دهندگان اجازه می‌دهد انواع ربات‌های هوشمند، یوزربات‌های اتوماسیون سازمانی، کلاینت‌های سفارشی دسکتاپ و موبایل، و سامانه‌های دریافت و ارسال گزارش مالی و تراکنش بانکی را پیاده‌سازی کنند.
+کتابخانه **BaleX** با مهندسی معکوس و استخراج کامل پروتکل رسمی کلاینت بله (`web.bale.ai`) ساخته شده است. این ابزار به توسعه‌دهندگان اجازه می‌دهد انواع ربات‌های هوشمند، یوزربات‌های اتوماسیون سازمانی سمت سرور، سامانه‌های دریافت و ارسال گزارش مالی، تراکنش بانکی و بات‌های رسمی را بدون نیاز به گوشی، شبیه‌ساز یا مرورگر پیاده‌سازی کنند.
 
 ### مزایای اصلی:
-- **عدم نیاز به مرورگر**: برخلاف سلنیوم و Puppeteer که نیازمند باز کردن مرورگر و مصرف بالای پردازنده و رم هستند، BaleX به شکل مستقیم با بسته‌های باینری Protobuf تبادل پکت می‌کند.
-- **پشتیبانی دوگانه**: قابل استفاده هم به صورت پکیج **Node.js** و هم در قالب کتابخانه **Flutter / Dart**.
-- **پایداری بالا**: استفاده از لایه gRPC-Web HTTP POST برای درخواست‌های حساس (لاگین و احراز هویت) و WebSocket برای استریم بلادرنگ پیام‌ها.
+- **عدم نیاز به مرورگر یا گوشی**: بدون باز کردن مرورگر و بدون نیاز به گوشی روشن، بسته‌های باینری Protobuf را با سرورهای بله تبادل می‌کند.
+- **پشتیبانی از سرور و Go**: قابل اجرا در **Node.js** و همچنین اتصال و فراخوانی بلادرنگ از طریق زبان **Go (Golang)** با پل ارتباطی IPC (STDIO) و HTTP REST.
+- **پایداری بالا**: استفاده از لایه gRPC-Web HTTP POST برای درخواست‌های حساس و WebSocket برای استریم بلادرنگ پیام‌ها.
 
 ---
 
 ## 📦 نصب و پیش‌نیازها
 
-### در محیط Node.js / TypeScript:
+### روش ۱: نصب مستقیم از گیت‌هاب (GitHub)
+برای نصب کتابخانه مستقیماً از روی ریپازیتوری گیت‌هاب:
 ```bash
-npm install balex
-# یا
-yarn add balex
-# یا
-pnpm add balex
+# نصب با شناسه گیت‌هاب
+npm install github:Zellias/bale-userbot
+
+# یا با آدرس کامل گیت
+npm install git+https://github.com/Zellias/bale-userbot.git
+
+# یا با Yarn و pnpm
+pnpm add github:Zellias/bale-userbot
+yarn add github:Zellias/bale-userbot
 ```
 
-### در محیط Flutter / Dart:
-فایل `pubspec.yaml` را باز کرده و وابستگی را اضافه کنید:
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  balex: ^1.2.0
-  web_socket_channel: ^3.0.1
-  http: ^1.2.2
+### روش ۲: نصب از طریق npm
+```bash
+npm install bale-userbot
 ```
 
 ---
@@ -237,84 +238,193 @@ await client.messages.sendMessage({
 });
 ```
 
-### سامانه جامع رویدادها و شنونده‌های بلادرنگ (All 16 Events & Listeners)
-کتابخانه BaleX از طریق استریم WebSocket از تمامی ۱۶ رویداد رسمی بله پشتیبانی می‌کند:
+### سامانه جامع رویدادها و کاتالوگ ۶۰+ رویداد زنده سوکت
 
-| نام رویداد (Event) | تگ سرور | آرگومان دریافتی | کاربرد و مفهوم |
+کتابخانه BaleX از طریق استریم اختصاصی WebSocket از تمامی بیش از ۶۰ رویداد رسمی پروتکل بله پشتیبانی می‌کند. رویدادها به صورت خودکار از فریم‌های باینری Protobuf سرور بله (تگ‌های ۱ تا ۵۴۳۵۵) دیکود شده و از طریق `EventEmitter` به اپلیکیشن تحویل داده می‌شوند:
+
+| نام رویداد (Event) | تگ سرور | دسته‌بندی | شرح و کاربرد در بله |
 | :--- | :--- | :--- | :--- |
-| `message` | Tag 55 | `MessageEvent` | دریافت پیام جدید (متنی، چندرسانه‌ای یا پاکت هدیه) همراه با هلپرها |
-| `messageEdit` | Tag 162 | `{ peer, rid, message, date }` | ویرایش متن یا محتوای پیام ارسال‌شده |
-| `messageDelete` | Tag 46 | `{ peer, rids }` | حذف یک یا چند پیام در چت |
-| `messageReceived` | Tag 54 | `{ peer, startDate, date }` | تایید دریافت پیام در کلاینت مقصد (یک تیک خاکستری) |
-| `messageRead` | Tag 19 | `{ peer, startDate, date }` | تایید خوانده شدن پیام‌ها توسط مخاطب (دو تیک آبی) |
-| `chatClear` | Tag 47 | `{ peer }` | پاکسازی کامل تاریخچه گفتگو |
-| `reaction` | Tag 222 | `{ peer, rid, reactions, reactionByMe }` | ثبت یا حذف ایموجی و واکنش روی پیام |
-| `typing` | Tag 6 | `{ peer, userId, typingType }` | آغاز نوشتن پیام توسط مخاطب |
-| `typingStop` | Tag 81 | `{ peer, userId }` | پایان وضعیت در حال نوشتن |
-| `userOnline` | Tag 7 | `{ userId, deviceType }` | آنلاین شدن مخاطب در بله |
-| `userOffline` | Tag 8 | `{ userId, lastSeen }` | آفلاین شدن مخاطب و ثبت برچسب زمانی آخرین بازدید |
-| `connected` | Lifecycle | `{ uid, url, timestamp }` | اتصال موفقیت‌آمیز به سرور سوکت |
-| `disconnected` | Lifecycle | `{ code, reason }` | قطع اتصال سوکت |
-| `status` | Lifecycle | `ConnectionStatus` | تغییر وضعیت اتصال (CONNECTING, CONNECTED, ...) |
-| `error` | Error | `Error` | خطاهای شبکه، نشست یا سوکت |
-| `update` | Universal | `{ type, data, raw }` | فریم خام تمام آپدیت‌ها برای پردازش سفارشی |
+| **`message`** | Tag 55 | پیام‌رسانی | دریافت پیام جدید (متنی، رسانه‌ای، پاکت هدیه، پیام سرویس) همراه با متدهای هوشمند عملیاتی |
+| **`messageEdit`** | Tag 162 | پیام‌رسانی | ویرایش متن، کپشن یا محتوای پیام ارسال‌شده |
+| **`messageDelete`** | Tag 46 | پیام‌رسانی | حذف یک یا چند پیام در گفتگو توسط کاربر یا مدیر چت |
+| **`chatClear`** | Tag 47 | پیام‌رسانی | پاکسازی کامل تاریخچه گفتگو برای دو طرف |
+| **`chatDelete`** | Tag 48 | پیام‌رسانی | حذف کل گفتگو از لیست چت‌ها |
+| **`messageReceived`** | Tag 54 | پیام‌رسانی | تایید رسیدن پیام به دستگاه مقصد (تک‌تیک خاکستری) |
+| **`messageRead`** | Tag 19 | پیام‌رسانی | تایید خوانده شدن پیام توسط مخاطب (دو تیک آبی) |
+| **`messageReadByMe`** | Tag 50 | پیام‌رسانی | علامت‌گذاری پیام به عنوان خوانده‌شده توسط اکانت خودمان |
+| **`chatShow`** | Tag 93 | پیام‌رسانی | خروج گفتگو از حالت مخفی و نمایش مجدد در لیست چت‌ها |
+| **`chatArchive`** | Tag 94 | پیام‌رسانی | آرشیو شدن گفتگو یا پوشه |
+| **`chatFavourite`** | Tag 95 | پیام‌رسانی | افزودن گفتگو به برگزیده‌ها (Favorite) |
+| **`messageDateChanged`** | Tag 163 | پیام‌رسانی | تغییر برچسب زمانی پیام |
+| **`stickerCollectionsChanged`** | Tag 164 | پیام‌رسانی | به‌روزرسانی کالکشن‌ها و پکیج‌های استیکر کاربر |
+| **`messageQuotedChanged`** | Tag 169 | پیام‌رسانی | تغییر یا حذف پیام مرجع ریپلای شده |
+| **`mentionReadByMe`** | Tag 52829 | پیام‌رسانی | سین شدن پیام‌های حاوی منشن کاربر |
+| **`pinnedDialogsChanged`** | Tag 52830 | پیام‌رسانی | تغییر در لیست یا ترتیب گفتگوهای پین‌شده |
+| **`dialogsMarkedAsRead`** | Tag 54335 | پیام‌رسانی | علامت‌گذاری گروهی گفتگوها به عنوان خوانده‌شده |
+| **`dialogsMarkedAsUnread`** | Tag 54336 | پیام‌رسانی | علامت‌گذاری گروهی چت‌ها به عنوان خوانده‌نشده |
+| **`dialogsUnpinned`** | Tag 54339 | پیام‌رسانی | برداشته شدن سنجاق و پین گفتگو |
+| **`messagePinned`** | Tag 54340 | پیام‌رسانی | پین و سنجاق شدن پیام جدید در گروه یا کانال |
+| **`messagesUnPinned`** | Tag 54341 | پیام‌رسانی | برداشته شدن سنجاق یک یا چند پیام |
+| **`dialogArchiveStatus`** | Tag 54345 | پیام‌رسانی | تغییر وضعیت فعال/غیرفعال آرشیو گفتگو |
+| **`messageStreamChunks`** | Tag 54351 | پیام‌رسانی | دریافت بسته‌های زنده متن تولیدی هوش مصنوعی یا استریم (Streaming) |
+| **`reaction`** | Tag 222 / 52825 | واکنش‌ها | ثبت، تغییر یا حذف واکنش ایموجی روی پیام توسط کاربران |
+| **`messageNewReaction`** | Tag 54323 | واکنش‌ها | ثبت واکنش جدید با جزئیات کامل کاربر و ایموجی |
+| **`messageReactionsReadByMe`** | Tag 52832 | واکنش‌ها | سین شدن واکنش‌های ثبت‌شده توسط کاربر |
+| **`typing`** | Tag 6 | حضور و وضعیت | شروع تایپ، ضبط صدا، ارسال ویدیو یا آپلود فایل توسط مخاطب |
+| **`typingStop`** | Tag 81 | حضور و وضعیت | توقف وضعیت در حال نوشتن مخاطب |
+| **`userOnline`** | Tag 7 | حضور و وضعیت | آنلاین شدن کاربر در پلتفرم بله |
+| **`userOffline`** | Tag 8 | حضور و وضعیت | آفلاین شدن کاربر همراه با برچسب زمانی آخرین بازدید |
+| **`userLastSeen`** | Tag 9 | حضور و وضعیت | تغییر در تنظیمات حریم خصوصی یا وضعیت آخرین بازدید کاربر |
+| **`presence`** | Alias | حضور و وضعیت | شنونده سراسری هرگونه تغییر وضعیت آنلاین/آفلاین/بازدید |
+| **`userAvatarChanged`** | Tag 16 | کاربر و نمایه | تغییر یا حذف عکس پروفایل کاربر |
+| **`userNameChanged`** | Tag 32 | کاربر و نمایه | تغییر نام و نام‌خانوادگی نمایشی کاربر |
+| **`userLocalNameChanged`** | Tag 51 | کاربر و نمایه | تغییر نام ذخیره شده مخاطب در دفترچه تلفن |
+| **`userContactsChanged`** | Tag 134 | کاربر و نمایه | به‌روزرسانی لیست مخاطبین همگام‌شده |
+| **`userNickChanged`** | Tag 209 | کاربر و نمایه | تغییر یا ثبت نام‌کاربری عمومی (Username) |
+| **`userAboutChanged`** | Tag 210 | کاربر و نمایه | تغییر بیوگرافی (About / Bio) نمایه کاربر |
+| **`userPreferredLanguagesChanged`** | Tag 212 | کاربر و نمایه | تغییر زبان مورد نظر کاربر در تنظیمات بله |
+| **`userTimeZoneChanged`** | Tag 216 | کاربر و نمایه | تغییر منطقه زمانی حساب کاربری |
+| **`userBotCommandsChanged`** | Tag 217 | کاربر و نمایه | تغییر در لیست دستورات ثبت‌شده برای ربات |
+| **`userBlocked`** | Tag 2629 | کاربر و نمایه | مسدودسازی یک کاربر (بلاک) |
+| **`userUnblocked`** | Tag 2630 | کاربر و نمایه | رفع مسدودیت کاربر (آنبلاک) |
+| **`phoneNumberChanged`** | Tag 52803 | کاربر و نمایه | تغییر شماره تلفن همراه متصل به حساب کاربری |
+| **`contactsAdded`** | Tag 40 | کاربر و نمایه | افزوده شدن مخاطب جدید به دفترچه تلفن |
+| **`contactsRemoved`** | Tag 41 | کاربر و نمایه | حذف مخاطب از دفترچه تلفن بله |
+| **`allContactsRemoved`** | Tag 54353 | کاربر و نمایه | پاکسازی کامل تمام مخاطبین حساب |
+| **`groupOnline`** | Tag 33 | گروه و کانال | تغییر تعداد اعضای آنلاین گروه |
+| **`groupNicknameChanged`** | Tag 57 | گروه و کانال | تغییر آیدی یا لینک عمومی گروه |
+| **`groupMessagePinned`** | Tag 721 | گروه و کانال | پین شدن پیام جدید در گروه |
+| **`groupPinRemoved`** | Tag 722 | گروه و کانال | برداشته شدن سنجاق پیام گروه |
+| **`groupRestrictionChanged`** | Tag 723 | گروه و کانال | تغییر در محدودیت‌های اعمال‌شده روی گروه |
+| **`groupTitleChanged`** | Tag 2609 | گروه و کانال | تغییر عنوان و نام گروه |
+| **`groupAvatarChanged`** | Tag 2610 | گروه و کانال | تغییر عکس نمایه و آواتار گروه |
+| **`groupMemberChanged`** | Tag 2612 | گروه و کانال | تغییر وضعیت یا نقش عضو در گروه |
+| **`groupExtChanged`** | Tag 2613 | گروه و کانال | تغییر اکستنشن‌ها و ویژگی‌های تکمیلی گروه |
+| **`groupMembersUpdated`** | Tag 2614 | گروه و کانال | به‌روزرسانی جامع لیست اعضای گروه |
+| **`groupTopicChanged`** | Tag 2616 | گروه و کانال | تغییر موضوع یا دسته‌بندی موضوعی گروه |
+| **`groupAboutChanged`** | Tag 2617 | گروه و کانال | تغییر توضیحات و بیوگرافی گروه |
+| **`groupOwnerChanged`** | Tag 2619 | گروه و کانال | انتقال مالکیت اصلی گروه به کاربر دیگر |
+| **`groupHistoryShared`** | Tag 2620 | گروه و کانال | تغییر وضعیت دسترسی اعضای جدید به تاریخچه چت |
+| **`groupMembersCountChanged`** | Tag 2622 | گروه و کانال | تغییر تعداد کل اعضای گروه |
+| **`groupMemberDiff`** | Tag 2623 | گروه و کانال | رویداد پیوستن یا خروج عضو به گروه |
+| **`groupCanSendMessagesChanged`** | Tag 2624 | گروه و کانال | تغییر مجوز ارسال پیام اعضا (بستن یا باز کردن چت) |
+| **`groupCanViewMembersChanged`** | Tag 2625 | گروه و کانال | تغییر مجوز دیدن لیست اعضا توسط کاربران عادی |
+| **`groupCanInviteMembersChanged`** | Tag 2626 | گروه و کانال | تغییر دسترسی اعضا جهت دعوت دیگران |
+| **`groupMemberAdminChanged`** | Tag 2627 | گروه و کانال | ارتقا به مدیر یا تنزل مقام در گروه |
+| **`groupBecameOrphaned`** | Tag 2628 | گروه و کانال | بدون مالک و مدیر شدن گروه |
+| **`groupMemberPermissionsChanged`** | Tag 52804 | گروه و کانال | تغییر ریزمجوزهای یک عضو خاص در گروه |
+| **`groupDefaultPermissionsChanged`** | Tag 52805 | گروه و کانال | تغییر مجوزهای پیش‌فرض عمومی گروه |
+| **`channelNickChanged`** | Tag 2880 | گروه و کانال | تغییر نام‌کاربری یا شناسه عمومی کانال |
+| **`channelAdvertisementTypeChanged`** | Tag 52801 | گروه و کانال | تغییر نوع تبلیغات فعال درون کانال |
+| **`channelAdTagIdChanged`** | Tag 52802 | گروه و کانال | تغییر شناسه تگ‌های تبلیغاتی کانال |
+| **`channelSignMessagesChanged`** | Tag 54354 | گروه و کانال | فعال یا غیرفعال شدن امضای نام نویسنده در کانال |
+| **`slowModeChanged`** | Tag 54355 | گروه و کانال | تنظیم حالت آرام (Slow Mode) و تاخیر ارسال پیام اعضا |
+| **`callStarted`** | Tag 52807 | تماس‌ها | شروع تماس صوتی یا تصویری |
+| **`callAccepted`** | Tag 52808 | تماس‌ها | پذیرش و برقراری تماس توسط مخاطب |
+| **`callDiscarded`** | Tag 52809 | تماس‌ها | قطع شدن، رد یا پایان یافتن تماس |
+| **`callReceived`** | Tag 52810 | تماس‌ها | دریافت زنگ تماس ورودی |
+| **`groupCallStarted`** | Tag 52811 | تماس‌ها | شروع تماس گروهی درون گروه یا کانال |
+| **`groupCallEnded`** | Tag 52812 | تماس‌ها | پایان تماس صوتی یا تصویری گروهی |
+| **`callReactionSent`** | Tag 52813 | تماس‌ها | ارسال واکنش ایموجی حین مکالمه زنده |
+| **`callUpgraded`** | Tag 52816 | تماس‌ها | ارتقای تماس دو نفره به تماس گروهی |
+| **`peersInvited`** | Tag 52817 | تماس‌ها | دعوت کاربران جدید به تماس در حال اجرا |
+| **`multiPeerCallStarted`** | Tag 52818 | تماس‌ها | آغاز کنفرانس و تماس چندطرفه |
+| **`peersStateChanged`** | Tag 52819 | تماس‌ها | تغییر وضعیت اعضا در تماس (میکروفون، دوربین، ...) |
+| **`call`** | Alias | تماس‌ها | شنونده جامع و یکپارچه تمامی رویدادهای تماس |
+| **`giftPacket`** | Custom | پاکت هدیه | دریافت پیام پاکت هدیه نقدی ریالی در گفتگو |
+| **`goldGiftPacket`** | Custom | پاکت هدیه | دریافت پیام پاکت هدیه طلای بله در گفتگو |
+| **`giftPacketOpened`** | Service 17/18 | پاکت هدیه | رویداد باز شدن پاکت هدیه توسط یکی از کاربران و دریافت مبلغ |
+| **`miniAppData`** | Service 21 | مینی‌اپ | دریافت داده‌های ارسال‌شده از مینی‌اپ/وب‌اپ به ربات |
+| **`serviceMessage`** | Tag 11 | پیام سرویس | پیام‌های سیستمی بله (عضویت، اخراج، تغییر عنوان، ...) |
+| **`groupCreated`** | Service 1 | پیام سرویس | رویداد ساخته شدن گروه جدید |
+| **`userInvited`** | Service 2 | پیام سرویس | رویداد افزوده شدن کاربر جدید به گروه |
+| **`userKicked`** | Service 3 | پیام سرویس | رویداد اخراج کاربر از گروه |
+| **`userLeft`** | Service 4 | پیام سرویس | رویداد ترک گروه توسط عضو |
+| **`connected`** | Lifecycle | سوکت | اتصال موفق به سرور WebSocket و شروع نشست کاربری |
+| **`disconnected`** | Lifecycle | سوکت | قطع ارتباط سوکت همراه با کد و دلیل قطع |
+| **`status`** | Lifecycle | سوکت | تغییر وضعیت کانکشن (CONNECTING, CONNECTED, ...) |
+| **`error`** | Error | خطاها | بروز هرگونه خطای شبکه، اعتبارسنجی یا سرور |
+| **`update`** | Universal | سوکت | دریافت فریم خام تمام به‌روزرسانی‌های ورودی سوکت |
 
-#### هوشمندی شیء پیام (`MessageEvent`) و هلپرهای آن:
-شیء ارسالی به شنونده رویداد `message` مجهز به متدهای عملیاتی مستقیم و پرچم‌های نوع محتوا است:
+#### هوشمندی شیء پیام (`MessageEvent`) و متدهای عملیاتی مستقیم:
+شیء ارسالی به شنونده رویداد `message` مجهز به ویژگی‌های تشخیصی و متدهای مستقیم است:
 
 ```javascript
 client.on('message', async (msg) => {
   console.log(`فرستنده: ${msg.senderId} | متن: ${msg.text}`);
 
-  // پرچم‌های نوع پیام
+  // ۱. پرچم‌های تشخیصی نوع محتوا
   if (msg.isPhoto) console.log('پیام حاوی تصویر است 📸');
   if (msg.isVoice) console.log('پیام حاوی ویس است 🎙️');
+  if (msg.isAudio) console.log('پیام حاوی فایل صوتی است 🎵');
+  if (msg.isVideo) console.log('پیام حاوی ویدیو است 🎥');
+  if (msg.isDocument) console.log('پیام حاوی سند یا فایل است 📄');
+  if (msg.isSticker) console.log('پیام حاوی استیکر است ✨');
+
+  // ۲. باز کردن خودکار پاکت هدیه نقدی (Cash Gift Packet)
   if (msg.isGiftPacket) {
-    // باز کردن خودکار پاکت هدیه نقدی ریالی
-    const win = await msg.openGiftPacket();
-    console.log('مبلغ برنده شده از پاکت نقدی:', win.selfWinAmount, 'ریال');
+    console.log('مبلغ کل پاکت:', msg.giftPacket.totalAmount, 'ریال');
+    const claimRes = await msg.claimGiftPacket(); // یا msg.openGiftPacket()
+    console.log('مبلغ برنده شده شما:', claimRes.amount, 'ریال');
+    console.log('لیست برندگان:', await msg.getGiftPacketReceivers());
   }
+
+  // ۳. باز کردن خودکار پاکت هدیه طلا (Gold Gift Packet)
   if (msg.isGoldGiftPacket) {
-    // باز کردن خودکار پاکت هدیه طلای بله
-    const gold = await msg.openGoldGiftPacket();
-    console.log('میلی‌گرم طلای برنده شده:', gold.selfWinAmount);
+    console.log('شناسه پاکت طلا:', msg.goldGiftPacket.packetId);
+    const goldWin = await msg.claimGoldGiftPacket(); // یا msg.openGoldGiftPacket()
+    console.log('طلای برنده شده:', goldWin.amount, 'میلی‌گرم');
+    console.log('شناسه‌های برندگان طلا:', await msg.getGoldWinners());
   }
 
-  // متدهای عملیاتی سریع روی پیام
-  if (msg.text === 'پینگ') {
-    // پاسخ هوشمند با تاخیر انسانی، نمایش Seen و فرستادن تایپینگ
-    await msg.reply('پونگ! 🏓');
+  // ۴. پاسخ هوشمند شبیه‌ساز انسان (Seen -> Thinking Pause -> Typing -> Send)
+  if (msg.text === 'سلام') {
+    await msg.reply('درود! چطور می‌تونم کمکتون کنم؟ 👋');
   }
 
-  await msg.markAsReceived(); // تیک دریافت خاکستری
-  await msg.markAsRead();     // دو تیک سین آبی
-  await msg.react('❤️');      // ری‌اکشن ایموجی
+  // ۵. تایید دریافت و خوانده شدن
+  await msg.markAsReceived(); // تیک خاکستری
+  await msg.markAsRead();     // دو تیک آبی
+
+  // ۶. واکنش ایموجی، پین، فوروارد، حذف
+  await msg.react('❤️');
+  // await msg.forwardTo(targetPeer);
+  // await msg.pin();
+  // await msg.delete();
 });
 ```
 
-#### کد کامل شنونده‌های تمامی رویدادها:
+#### کد نمونه شنود دسته‌های مختلف رویدادهای زنده:
 ```javascript
-// ویرایش و حذف
-client.on('messageEdit', (e) => console.log(`پیام ${e.rid} ویرایش شد.`));
+// ۱. پیام‌ها، ویرایش، حذف و سنجاق
+client.on('messageEdit', (e) => console.log(`پیام ${e.rid} ویرایش شد:`, e.message));
 client.on('messageDelete', (d) => console.log(`پیام‌های ${d.rids} حذف شدند.`));
+client.on('messagePinned', (p) => console.log(`پیام سنجاق شد:`, p));
 
-// تیک دریافت و خوانده‌شدن
-client.on('messageReceived', (r) => console.log(`تحویل تا تاریخ ${r.startDate} (تک‌تیک)`));
-client.on('messageRead', (r) => console.log(`خوانده شدن تا تاریخ ${r.startDate} (دو تیک آبی)`));
+// ۲. تیک دریافت و خوانده شدن
+client.on('messageReceived', (r) => console.log(`تحویل تا ${r.startDate} (تک‌تیک)`));
+client.on('messageRead', (r) => console.log(`خوانده شدن تا ${r.startDate} (دو تیک آبی)`));
 
-// واکنش‌ها و تایپینگ
-client.on('reaction', (react) => console.log(`ری‌اکشن جدید روی پیام ${react.rid}:`, react.reactions));
+// ۳. واکنش‌ها و حضور
+client.on('reaction', (react) => console.log(`ری‌اکشن پیام ${react.rid}:`, react.reactions));
 client.on('typing', (t) => console.log(`کاربر ${t.userId} در حال تایپ...`));
-client.on('typingStop', (t) => console.log(`تایپ کاربر ${t.userId} پایان یافت.`));
+client.on('typingStop', (t) => console.log(`کاربر ${t.userId} تایپ را متوقف کرد.`));
+client.on('userOnline', (u) => console.log(`🟢 کاربر ${u.userId} آنلاین شد.`));
+client.on('userOffline', (u) => console.log(`🔴 کاربر ${u.userId} آفلاین شد. آخرین بازدید: ${new Date(Number(u.lastSeen))}`));
 
-// حضور و آنلاین بودن
-client.on('userOnline', (u) => console.log(`کاربر ${u.userId} آنلاین شد 🟢`));
-client.on('userOffline', (u) => console.log(`کاربر ${u.userId} آفلاین شد 🔴`));
+// ۴. گروه‌ها و کانال‌ها
+client.on('groupTitleChanged', (g) => console.log(`نام گروه به ${g.title} تغییر کرد.`));
+client.on('groupMemberDiff', (m) => console.log(`تغییر عضویت گروه:`, m));
+client.on('slowModeChanged', (s) => console.log(`تاخیر ارسال گروه: ${s.seconds} ثانیه`));
 
-// چرخه اتصال
-client.on('connected', (c) => console.log(`اتصال برقرار شد برای UID: ${c.uid}`));
-client.on('disconnected', (d) => console.warn(`اتصال قطع شد: ${d.reason}`));
-client.on('error', (err) => console.error('خطای کلاینت:', err));
+// ۵. تماس‌ها
+client.on('callStarted', (c) => console.log(`تماس شروع شد:`, c));
+client.on('callAccepted', (c) => console.log(`تماس پاسخ داده شد:`, c));
+client.on('callDiscarded', (c) => console.log(`تماس قطع شد:`, c));
+
+// ۶. پاکت‌های هدیه و وب‌اپ‌ها
+client.on('giftPacketOpened', (open) => console.log(`کاربر ${open.receiverUserId} پاکت هدیه را باز کرد. مبلغ: ${open.amount} ریال`));
+client.on('miniAppData', (app) => console.log(`داده دریافتی از مینی‌اپ:`, app.data));
 
 await client.connect();
 ```
@@ -600,7 +710,7 @@ await client.deleteFolder(folderId);
 // ارسال نظرسنجی در گروه یا کانال
 await client.sendPoll(peerId, 'کدام زبان برنامه‌نویسی را ترجیح می‌دهید؟', [
   'JavaScript / Node.js',
-  'Dart / Flutter',
+  'Go (Golang)',
   'Python'
 ], {
   isAnonymous: true,
@@ -685,7 +795,7 @@ console.log('مبلغ قابل برداشت:', balanceInfo.availableBalanceRials
 
 ## 🎁 پاکت‌های هدیه نقدی و طلا (Gift Packets - Cash & Gold)
 
-پیام‌رسان بله از دو نوع پاکت هدیه پشتیبانی می‌کند: **پاکت هدیه نقدی ریالی** (از طریق کیف پول بله بر بستر `bale.giftpacket.v1.GiftPacket`) و **پاکت هدیه طلا** (بر بستر `bale.balebank.v1.GoldGiftPacket`). کتابخانه BaleX امکان ارسال و باز کردن هر دو نوع پاکت را به سادگی در اختیارتان قرار می‌دهد.
+پیام‌رسان بله از دو نوع پاکت هدیه پشتیبانی می‌کند: **پاکت هدیه نقدی ریالی** (از طریق موجودی کیف پول بله بر بستر `bale.giftpacket.v1.GiftPacket`) و **پاکت هدیه طلا** (بر بستر `bale.balebank.v1.GoldGiftPacket`). کتابخانه BaleX تمامی متدهای ارسال، باز کردن (Claim)، استعلام و دریافت لیست برندگان هر دو نوع پاکت را به سادگی در اختیارتان قرار می‌دهد.
 
 ### ارسال پاکت هدیه نقدی (sendGiftPacket)
 ارسال پاکت هدیه به چت شخصی، گروه یا کانال با قابلیت تقسیم شانسی (Random) یا مساوی (Equal):
@@ -705,28 +815,40 @@ const res = await client.sendGiftPacket({
 console.log('پاکت هدیه معمولی نقدی با موفقیت ارسال شد.');
 ```
 
-### باز کردن و دریافت پاکت نقدی (openGiftPacket)
-هنگامی که پیامی حاوی پاکت هدیه نقدی دریافت می‌کنید، می‌توانید با متد `openGiftPacket` آن را باز کنید و سهم خود را مستقیماً به کیف پول انتقال دهید:
+### باز کردن، دریافت وجه و استعلام پاکت نقدی (openGiftPacket / claimGiftPacket / getGiftPacket)
+هنگامی که پیامی حاوی پاکت هدیه نقدی دریافت می‌کنید، می‌توانید با متد `claimGiftPacket` آن را باز کرده و سهم خود را مستقیماً دریافت کنید، یا با `getGiftPacket` و `getGiftPacketReceivers` مشخصات و لیست برندگان آن را بخوانید:
 
 ```javascript
-// باز کردن پاکت هدیه نقدی بر اساس مشخصات پیام
-const result = await client.openGiftPacket({
+// ۱. باز کردن و دریافت سهم نقدی از پاکت (Claim)
+const claimRes = await client.claimGiftPacket({
   peer: 123456789,            // شناسه پیری که پیام پاکت در آن آمده
   randomId: 9876543210123n,   // شناسه رندوم پیام پاکت هدیه
   date: Date.now(),           // زمان پیام
-  walletId: 'کیف_پول_مقصد'    // شناسه کیف پول (اختیاری)
+  walletId: 'WAL-12345'       // شناسه کیف پول (اختیاری)
 });
 
-console.log('وضعیت پاکت:', result.status);
-console.log('مبلغ برنده شده شما:', result.selfWinAmount, 'ریال');
-console.log('رتبه شما در باز کردن پاکت:', result.rank);
-console.log('تعداد افرادی که تاکنون پاکت را باز کرده‌اند:', result.openedCount);
-console.log('لیست دریافت‌کنندگان:', result.giftReceivers);
-```
+console.log('وضعیت پاکت:', claimRes.status);
+console.log('مبلغ برنده شده شما:', claimRes.amount, 'ریال');
+console.log('آیا برنده شدید؟', claimRes.isCurrentWinner);
+console.log('رتبه شما در باز کردن پاکت:', claimRes.rank);
+console.log('تعداد افرادی که تاکنون پاکت را باز کرده‌اند:', claimRes.openedCount);
 
-### دریافت توکن پرداخت پاکت هدیه (getGiftPacketPaymentToken)
-جهت پرداخت و فعال‌سازی پاکت هدیه ایجاد شده از درگاه پرداخت:
-```javascript
+// ۲. استعلام جزئیات پاکت هدیه بدون نیاز به کلیم مجدد
+const packetInfo = await client.getGiftPacket({
+  peer: 123456789,
+  randomId: 9876543210123n
+});
+console.log('متن پاکت:', packetInfo.description);
+console.log('تعداد کل جوایز:', packetInfo.winnerCount);
+
+// ۳. دریافت لیست برندگان پاکت هدیه نقدی
+const receivers = await client.getGiftPacketReceivers({
+  peer: 123456789,
+  randomId: 9876543210123n
+});
+console.log('لیست برندگان:', receivers);
+
+// ۴. دریافت توکن پرداخت پاکت هدیه از درگاه
 const payToken = await client.getGiftPacketPaymentToken({ 
   token: 'payment_token_123', 
   amount: 500000 
@@ -749,29 +871,82 @@ const goldPacket = await client.sendGoldGiftPacket({
 console.log('شناسه پاکت طلای ارسالی:', goldPacket.giftPacketId);
 ```
 
-### باز کردن پاکت طلا و استعلام برندگان
+### باز کردن پاکت طلا و دریافت برندگان (openGoldGiftPacket / claimGoldGiftPacket / getGoldWinners)
 برای دریافت سهم طلا از پاکت باز شده و استعلام لیست برندگان:
 
 ```javascript
 const packetId = 987654321n;
 
-// ۱. باز کردن و دریافت سهم طلا
-const claimResult = await client.openGoldGiftPacket(packetId);
-console.log('میلی‌گرم طلای برنده شده:', claimResult.selfWinAmount);
-console.log('تعداد افراد بازکننده:', claimResult.openedCount);
+// ۱. باز کردن و دریافت سهم طلا (Claim)
+const goldClaim = await client.claimGoldGiftPacket(packetId);
+console.log('میلی‌گرم طلای برنده شده:', goldClaim.amount);
+console.log('تعداد افراد بازکننده:', goldClaim.openedCount);
+console.log('رتبه شما:', goldClaim.rank);
 
 // ۲. مشاهده شناسه‌های کاربری برندگان پاکت طلا
-const winners = await client.getGoldGiftPacketWinners(packetId);
-console.log('لیست برندگان طلا:', winners);
+const winners = await client.getGoldWinners(packetId);
+console.log('لیست برندگان طلا:', winners.winnerIds);
 ```
 
 ---
 
 ## 📱 مینی‌اپ‌ها و وب‌اپ‌های بله (Mini Apps & WebApps)
 
-پیام‌رسان بله از وب‌اپلیکیشن‌ها و مینی‌اپ‌ها بر بستر پروتکل رسمی `bale.appzar.v1.Appzar` و `bale.ketf.v1.Ketf` پشتیبانی می‌کند. کتابخانه BaleX تمامی متدهای مورد نیاز برای احراز هویت، تولید رشته `initData`، امضای امنیتی هش سرور و تبادل داده را فراهم نموده است.
+پیام‌رسان بله از وب‌اپلیکیشن‌ها و مینی‌اپ‌ها بر بستر پروتکل رسمی `bale.appzar.v1.Appzar` و `bale.ketf.v1.Ketf` پشتیبانی می‌کند. کتابخانه BaleX مجهز به موتور اختصاصی `MiniAppUtils` کاملاً همگام با استاندارد رسمی تلگرام و بله است که تمامی امکانات تولید رشته `initData`، امضای رمزی با توکن ربات (HMAC-SHA256)، اعتبارسنجی سمت سرور، پارس داده‌ها و ساخت لینک راه‌اندازی (Launch URL) درون وب‌ویو را فراهم می‌کند.
 
-### ساخت کامل پارامترهای راه‌اندازی مینی‌اپ (createMiniAppParams)
+### ساخت و اعتبارسنجی پارامترهای مینی‌اپ (MiniAppUtils Engine)
+تولید آفلاین یا آنلاین `initData`، امضای امنیتی هش، و اعتبارسنجی رمزی در سمت بک‌اند ربات:
+
+```javascript
+const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('bale-userbot');
+
+const botToken = '123456789:ABCdefGhIJKlmNoPQRstuVWXyz';
+
+// ۱. تولید رشته استاندارد initData با امضای معتبر HMAC-SHA256
+const initData = MiniAppUtils.createInitData({
+  user: {
+    id: 987654321,
+    first_name: 'رضا',
+    username: 'rezabalex',
+    language_code: 'fa'
+  },
+  queryId: 'AAH_test123',
+  authDate: Math.floor(Date.now() / 1000),
+  startParam: 'ref_bonus_100',
+  botToken // اختیاری جهت ایجاد هش امضای معتبر
+});
+
+console.log('رشته اعتبارسنجی مینی‌اپ:', initData);
+
+// ۲. اعتبارسنجی امضای امنیتی در سمت بک‌اند ربات (Backend Validation)
+const validation = MiniAppUtils.validateInitData(initData, botToken);
+if (validation.valid) {
+  console.log('امضای مینی‌اپ کاملاً معتبر است! کاربر تایید شد:', validation.data.user);
+} else {
+  console.error('داده‌های مینی‌اپ نامعتبر یا دستکاری شده است:', validation.error);
+}
+
+// ۳. پارس کردن رشته initData به آبجکت تایپ‌شده
+const parsed = MiniAppUtils.parseInitData(initData);
+console.log('شناسه کوئری:', parsed.query_id);
+console.log('پارامتر استارت دیپ‌لینک:', parsed.start_param);
+
+// ۴. ساخت آدرس کامل باز کردن مینی‌اپ درون وب‌ویو (Launch URL)
+const launchUrl = MiniAppUtils.buildMiniAppUrl({
+  webAppUrl: 'https://my-app.bale.ai',
+  initData,
+  themeParams: {
+    bg_color: '#0e1015',
+    text_color: '#f3f4f6',
+    button_color: '#10b981'
+  }
+});
+console.log('آدرس نهایی جهت بارگذاری در WebView:', launchUrl);
+// نمونه خروجی:
+// https://my-app.bale.ai/#tgWebAppData=query_id%3D...%26user%3D...%26hash%3D...&tgWebAppVersion=7.0&tgWebAppPlatform=weba&tgWebAppThemeParams=...
+```
+
+### دریافت پارامترهای راه‌اندازی از سرور بله (createMiniAppParams)
 این متد هش امنیتی رسمی بله را دریافت کرده و رشته `initData` استاندارد تلگرام/بله، آبجکت اطلاعات کاربر، پارامترهای تم و `launchUrl` کامل همراه با فرگمنت هش (`#tgWebAppData=...`) را آماده می‌سازد:
 
 ```javascript
@@ -786,10 +961,7 @@ const appParams = await client.createMiniAppParams(botId, {
 console.log('رشته اعتبارسنجی (initData):', appParams.initData);
 console.log('امضای امنیتی سرور (hash):', appParams.hash);
 console.log('شناسه کوئری (queryId):', appParams.queryId);
-console.log('اطلاعات کاربر (user):', appParams.user);
 console.log('آدرس کامل جهت بارگذاری در وب‌ویو (launchUrl):', appParams.launchUrl);
-// نمونه خروجی launchUrl:
-// https://my-mini-app.example.com/#tgWebAppData=query_id%3D...%26user%3D...%26auth_date%3D...%26hash%3D...&tgWebAppThemeParams=...&tgWebAppPlatform=weba
 ```
 
 ### دریافت آدرس مینی‌اپ از سرور (getMiniAppUrl)
@@ -798,21 +970,11 @@ console.log('آدرس کامل جهت بارگذاری در وب‌ویو (launc
 ```javascript
 const { url, queryId } = await client.getMiniAppUrl({
   botUserId: botId,
-  screenMode: 1, // ۱: تمام‌صفحه (Fullscreen)، ۰: پیش‌فرض
+  screenMode: ScreenMode.FULLSCREEN, // ۰: تمام‌صفحه، ۱: فول سایز، ۲: فشرده
   directLink: 'start_param_value'
 });
 
 console.log('لینک اجرای وب‌اپ:', url);
-```
-
-### دریافت هش امنیتی وب‌اپ (getWebappHash)
-دریافت هش اختصاصی ربات برای تایید نشست کاربر (سرویس `bale.ketf.v1.Ketf`):
-
-```javascript
-const hashInfo = await client.getWebappHash(botId, 'custom_payload_data');
-console.log('هش امنیتی:', hashInfo.hash);
-console.log('شناسه کوئری:', hashInfo.queryId);
-console.log('زمان امضا:', hashInfo.authDate);
 ```
 
 ### ارسال داده از مینی‌اپ به ربات (sendMiniAppData)
@@ -821,7 +983,7 @@ console.log('زمان امضا:', hashInfo.authDate);
 ```javascript
 await client.sendMiniAppData({
   botUserId: botId,
-  queryId: hashInfo.queryId,
+  queryId: appParams.queryId,
   data: { score: 250, action: 'level_complete' },
   buttonText: 'مشاهده نتیجه'
 });
@@ -831,7 +993,7 @@ console.log('داده‌ها با موفقیت به ربات ارسال شد.');
 
 ### تنظیمات دکمه منو و متدهای سفارشی مینی‌اپ
 ```javascript
-// دریافت دکمه منوی ربات
+// دریافت دکمه منوی ربات (Commands یا WebApp)
 const menuBtn = await client.getBotMenuButton(botId);
 console.log('دکمه منو:', menuBtn);
 
@@ -983,6 +1145,181 @@ const res = await client.invoke('bale.presence.v1.Presence', 'SetOnline', {
 | `FLOOD_WAIT` | تعداد درخواست فراتر از حد مجاز است | انتظار خودکار مطابق زمان اعلامی سرور |
 | `INVALID_PAN` | شماره کارت مقصد نامعتبر است | اعتبارسنجی الگوریتم Luhn پیش از استعلام |
 | `4401 onUnauthenticated` | نشست سوکت منقضی شده است | تمدید خودکار توکن JWT با متد Refresh |
+
+---
+
+## 🤖 بازوهای رسمی بله (Official Bale HTTP Bot API)
+
+علاوه بر یوزربات و پروتکل باینری، این کتابخانه شامل پشتیبانی ۱۰۰٪ بومی و صفر وابستگی از **API رسمی بازوهای بله ([docs.bale.ai](https://docs.bale.ai/))** است.
+
+### راه‌اندازی سریع با Long Polling
+```javascript
+const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('bale-userbot');
+
+// مقداردهی با توکن دریافت شده از botfather@ در بله
+const bot = new BaleBot('123456789:abcdIuZmK5qNEm2A1BhUaAg7MPJv1O9KCcBQB2ro');
+
+// دریافت و پاسخ به پیام‌ها
+bot.on('message', async (msg) => {
+  if (msg.text === '/start') {
+    const kb = new InlineKeyboard()
+      .button('ثبت‌نام', 'btn_register')
+      .url('وب‌سایت بله', 'https://ble.ir')
+      .row()
+      .webApp('مینی‌اپ فروشگاه', 'https://app.example.com')
+      .copyText('کپی کد معرف', 'BALE2026');
+
+    await bot.sendMessage(msg.chat.id, 'سلام! به بازوی بله خوش آمدید.', {
+      reply_markup: kb
+    });
+  }
+});
+
+// کلیک دکمه‌های اینلاین
+bot.on('callback_query', async (query) => {
+  await bot.answerCallbackQuery(query.id, { text: 'عملیات با موفقیت ثبت شد.' });
+});
+
+// شروع دریافت رویدادها
+bot.startPolling({ interval: 300, timeout: 20 });
+```
+
+### پرداخت و کیف‌پول الکترونیکی بله (Electronic Wallet Invoices)
+```javascript
+// ارسال فاکتور پرداخت به کاربر
+await bot.sendInvoice(
+  chatId,
+  'اشتراک ویژه بازو',
+  'دسترسی یک‌ماهه به امکانات پرمیوم',
+  'order_vip_30days',
+  'PROVIDER_TOKEN',
+  'IRR',
+  [{ label: 'هزینه اشتراک', amount: 150000 }]
+);
+
+// تایید پیش از پرداخت (PreCheckoutQuery)
+bot.on('pre_checkout_query', async (query) => {
+  await bot.answerPreCheckoutQuery(query.id, true);
+});
+
+// دریافت رویداد پرداخت موفق
+bot.on('successful_payment', async (payment, msg) => {
+  console.log('پرداخت تایید شد:', payment.total_amount, payment.invoice_payload);
+});
+```
+
+### استقرار به صورت وب‌هوک (Webhook)
+```javascript
+const http = require('http');
+
+// ثبت آدرس وب‌هوک در سرور بله
+await bot.setWebhook('https://bot.example.com/bale-webhook');
+
+// اتصال میدلور به سرور Express یا Node.js HTTP
+const webhookHandler = bot.createWebhookMiddleware({ secretToken: 'MY_SECRET' });
+http.createServer((req, res) => {
+  if (req.url === '/bale-webhook') return webhookHandler(req, res);
+  res.writeHead(404).end();
+}).listen(443);
+```
+
+---
+
+## 🐹 اتصال و اجرا در زبان Go (Golang Integration)
+
+کتابخانه BaleX دارای پل ارتباطی داخلی (Bridge) به دو صورت **STDIO Stream** (برای اجرای مستقیم به عنوان Subprocess) و **HTTP JSON-RPC** (برای اتصال میکروسرویسی) می‌باشد:
+
+### روش ۱: اجرای مستقیم از Go به عنوان Child Process (تاخیر صفر، بدون اشغال پورت)
+
+```go
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"os/exec"
+)
+
+type Command struct {
+	ID     int         `json:"id"`
+	Action string      `json:"action"`
+	Method string      `json:"method,omitempty"`
+	Params interface{} `json:"params,omitempty"`
+}
+
+type Response struct {
+	ID      int             `json:"id"`
+	Success bool            `json:"success"`
+	Result  json.RawMessage `json:"result"`
+	Error   string          `json:"error,omitempty"`
+}
+
+func main() {
+	// اجرای پل ارتباطی به عنوان زیرپروسس
+	cmd := exec.Command("node", "src/bridge.js", "--stdio")
+	stdin, _ := cmd.StdinPipe()
+	stdout, _ := cmd.StdoutPipe()
+	_ = cmd.Start()
+	reader := bufio.NewReader(stdout)
+
+	// رویداد اولیه اتصال
+	initMsg, _ := reader.ReadBytes('\n')
+	fmt.Println("Bridge ready:", string(initMsg))
+
+	// ارسال متد sendMessage به بله
+	cmdData, _ := json.Marshal(Command{
+		ID:     1,
+		Action: "call",
+		Method: "sendMessage",
+		Params: []interface{}{123456789, "سلام از برنامه نوشته شده با Go!"},
+	})
+	stdin.Write(append(cmdData, '\n'))
+
+	// خواندن پاسخ
+	respLine, _ := reader.ReadBytes('\n')
+	var resp Response
+	json.Unmarshal(respLine, &resp)
+	fmt.Printf("نتیجه بازگشتی در Go: %+v\n", resp)
+}
+```
+
+### روش ۲: اجرای دائم به عنوان پل HTTP
+
+```bash
+# اجرای پل ارتباطی در پس‌زمینه
+npx bale-userbot bridge --port 8765
+```
+
+سپس در زبان Go با پکیج استاندارد `net/http`:
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	payload, _ := json.Marshal(map[string]interface{}{
+		"method": "sendMessage",
+		"params": []interface{}{
+			123456789,
+			"ارسال پیام مستقیم از سرور Go به بله",
+		},
+	})
+
+	resp, err := http.Post("http://127.0.0.1:8765/api/call", "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	fmt.Println("وضعیت ارسال HTTP:", resp.Status)
+}
+```
 
 ---
 
