@@ -41,3 +41,7 @@ next-ws.bale.ai/
 sentry.hamravesh.com/
 worldtimeapi.org/
 wss---next-ws.bale.ai/
+
+# SelfPro standalone application (local only, never tracked in balex)
+selfpro/
+
