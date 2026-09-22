@@ -389,7 +389,7 @@ await client.sendSticker(peer, stickerId, accessHash, stickerPackId);
 ### Mini App & Parameter Engine Runbook:
 - **Generate initData & Launch URL**:
   ```javascript
-  const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('bale-userbot');
+  const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('balex');
   // Create HMAC-SHA256 signed initData
   const initData = MiniAppUtils.createInitData({ user, queryId, startParam, botToken });
   // Validate signature on backend

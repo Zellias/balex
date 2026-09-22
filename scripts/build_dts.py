@@ -3083,15 +3083,11 @@ export default BaleClient;
 
 root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 idx_dts = os.path.join(root_path, "index.d.ts")
-bale_dts = os.path.join(root_path, "bale-userbot", "index.d.ts")
 
 with open(idx_dts, "w", encoding="utf-8") as f:
     f.write(dts_content)
 
-with open(bale_dts, "w", encoding="utf-8") as f:
-    f.write(dts_content)
-
-print(f"Written {len(dts_content)} bytes to index.d.ts and bale-userbot/index.d.ts")
+print(f"Written {len(dts_content)} bytes to index.d.ts")
 
 # Validate brace matching
 curly = 0

@@ -8,7 +8,7 @@ import {
   InlineKeyboard,
   ReplyKeyboard,
   KeyboardRemove
-} from "bale-userbot";
+} from "balex";
 
 import type {
   BotMessage,
@@ -17,7 +17,7 @@ import type {
   BotSuccessfulPayment,
   BotUser,
   BotTransaction
-} from "bale-userbot";
+} from "balex";
 
 async function main() {
   const token = process.env.BALE_BOT_TOKEN || "123456789:abcdIuZmK5qNEm2A1BhUaAg7MPJv1O9KCcBQB2ro";

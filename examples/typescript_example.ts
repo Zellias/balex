@@ -13,7 +13,7 @@ import {
   DefaultThemeParams,
   MiniAppUtils,
   StringSession
-} from "bale-userbot";
+} from "balex";
 
 import type {
   MessageEvent,
@@ -24,7 +24,7 @@ import type {
   UserTypingUpdate,
   OpenGiftPacketResponse,
   BaleEventMap
-} from "bale-userbot";
+} from "balex";
 
 async function main() {
   // 1. Initialize client with typed configuration

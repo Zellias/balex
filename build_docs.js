@@ -2325,7 +2325,7 @@ client.on('goldGiftPacket', async (msg) => {
             <span>JavaScript</span>
             <button class="btn-copy" onclick="copyCode(this)">کپی</button>
           </div>
-          <pre><code class="language-javascript">const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('bale-userbot');
+          <pre><code class="language-javascript">const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('balex');
 
 const botToken = '123456789:ABCdefGhIJKlmNoPQRstuVWXyz';
 
@@ -4414,5 +4414,4 @@ func main() {
 `;
 
 fs.writeFileSync('./docs/index.html', html, 'utf8');
-fs.writeFileSync('./bale-userbot/docs/index.html', html, 'utf8');
-console.log('Successfully generated docs/index.html and synced to bale-userbot/docs/index.html');
+console.log('Successfully generated docs/index.html');

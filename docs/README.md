@@ -2,14 +2,14 @@
 
 # 🚀 BaleX — کتابخانه جامع پروتکل رسمی بله
 
-[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
-[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
-[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20TypeScript%20%7C%20Go-F59E0B.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/Zellias/balex)
+[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/Zellias/balex)
+[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20TypeScript%20%7C%20Go-F59E0B.svg?style=for-the-badge)](https://github.com/Zellias/balex)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 **پیاده‌سازی مستقل، پرسرعت و خالص پروتکل باینری پیام‌رسان بله و Bot API رسمی، بدون نیاز به مرورگر یا گوشی، همراه با پشتیبانی از سیستم مالی کارت‌به‌کارت، موتور ضد مسدودی و قابلیت اجرای مستقیم از زبان Go (Golang).**
 
-[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://zellias.github.io/bale-userbot/)
+[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://zellias.github.io/balex/)
 
 ---
 
@@ -898,7 +898,7 @@ console.log('لیست برندگان طلا:', winners.winnerIds);
 تولید آفلاین یا آنلاین `initData`، امضای امنیتی هش، و اعتبارسنجی رمزی در سمت بک‌اند ربات:
 
 ```javascript
-const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('bale-userbot');
+const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('balex');
 
 const botToken = '123456789:ABCdefGhIJKlmNoPQRstuVWXyz';
 
@@ -1154,7 +1154,7 @@ const res = await client.invoke('bale.presence.v1.Presence', 'SetOnline', {
 
 ### راه‌اندازی سریع با Long Polling
 ```javascript
-const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('bale-userbot');
+const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('balex');
 
 // مقداردهی با توکن دریافت شده از botfather@ در بله
 const bot = new BaleBot('123456789:abcdIuZmK5qNEm2A1BhUaAg7MPJv1O9KCcBQB2ro');

@@ -17,10 +17,10 @@ function showHelp() {
 🚀 BaleX CLI — Node.js & Go Runtime Tool for Bale Messenger
 
 Usage:
-  bale-userbot bridge [--port <number>] [--stdio]   Run IPC/HTTP Bridge for Go/External apps
-  bale-userbot bot --token <TOKEN>                  Run Official Bale Bot with polling
-  bale-userbot version                              Show version
-  bale-userbot help                                 Show this help message
+  balex bridge [--port <number>] [--stdio]   Run IPC/HTTP Bridge for Go/External apps
+  balex bot --token <TOKEN>                  Run Official Bale Bot with polling
+  balex version                              Show version
+  balex help                                 Show this help message
 
 Options:
   --port <number>    HTTP port for bridge (default: 8765)
@@ -46,7 +46,7 @@ switch (command) {
     const tokenIdx = args.indexOf('--token');
     const token = tokenIdx !== -1 ? args[tokenIdx + 1] : process.env.BALE_BOT_TOKEN;
     if (!token) {
-      console.error('❌ Error: --token is required. Example: bale-userbot bot --token 123456:ABC-DEF');
+      console.error('❌ Error: --token is required. Example: balex bot --token 123456:ABC-DEF');
       process.exit(1);
     }
     const bot = new BaleBot(token);
