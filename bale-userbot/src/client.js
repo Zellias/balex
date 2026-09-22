@@ -488,12 +488,24 @@ class BaleClient extends EventEmitter {
 
   /**
    * Inquire destination cardholder name from Shetab.
+   * Supports both object options `{ sourceCardNumber, destinationCardNumber, amountRials }`
+   * and positional arguments `(sourcePan, destinationPan, amountRials)`.
    */
-  async inquireDestinationPan({ sourceCardNumber, destinationCardNumber, amountRials }) {
+  async inquireDestinationPan(arg1, arg2, arg3) {
+    let sourcePan, destinationPan, amount;
+    if (typeof arg1 === 'object' && arg1 !== null) {
+      sourcePan = arg1.sourceCardNumber || arg1.sourcePan;
+      destinationPan = arg1.destinationCardNumber || arg1.destinationPan;
+      amount = arg1.amountRials || arg1.amount;
+    } else {
+      sourcePan = arg1;
+      destinationPan = arg2;
+      amount = arg3;
+    }
     return this.banking.inquireDestinationPan({
-      sourcePan: sourceCardNumber,
-      destinationPan: destinationCardNumber,
-      amount: String(amountRials)
+      sourcePan: String(sourcePan || ''),
+      destinationPan: String(destinationPan || ''),
+      amount: String(amount || '0')
     });
   }
 

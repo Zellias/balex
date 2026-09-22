@@ -126,4 +126,75 @@ for (const kw of eventKeywords) {
 }
 console.log("  ✅ Event Emitter overloads verified in index.d.ts");
 
+// 9. Verify Bracket Balance (Syntax validity)
+let curly = 0, parens = 0, square = 0;
+for (const c of dts) {
+  if (c === "{") curly++;
+  else if (c === "}") curly--;
+  else if (c === "(") parens++;
+  else if (c === ")") parens--;
+  else if (c === "[") square++;
+  else if (c === "]") square--;
+}
+assert.strictEqual(curly, 0, "All curly braces in index.d.ts must be balanced");
+assert.strictEqual(parens, 0, "All parentheses in index.d.ts must be balanced");
+assert.strictEqual(square, 0, "All square brackets in index.d.ts must be balanced");
+console.log("  ✅ Syntax bracket balance verified (100% balanced curlies, parens, brackets)");
+
+// 10. Verify Key Interfaces for Strong Autocomplete
+const expectedInterfaces = [
+  "CardInquiryOptions",
+  "CardInquiryResult",
+  "CardTransferOptions",
+  "CardTransferResult",
+  "CardBalanceOptions",
+  "CardBalanceResult",
+  "SendGiftPacketOptions",
+  "GiftPacketResult",
+  "SendGoldGiftPacketOptions",
+  "GoldGiftPacketResult",
+  "SendMessageOptions",
+  "SentMessageResult",
+  "BotChatFullInfo",
+  "BotChatMember",
+  "BotChatInviteLink",
+  "BotFile",
+  "BotSendMessageOptions",
+  "BotSendPhotoOptions",
+  "BotSendAudioOptions",
+  "BotSendDocumentOptions",
+  "BotSendVideoOptions",
+  "BotSendAnimationOptions",
+  "BotSendVoiceOptions",
+  "BotSendLocationOptions",
+  "BotSendContactOptions",
+  "BotSendInvoiceOptions",
+  "BotEditMessageTextOptions",
+  "BotEditMessageCaptionOptions",
+  "BotPromoteChatMemberOptions",
+  "BotMessageReplyMarkup"
+];
+
+for (const iface of expectedInterfaces) {
+  assert(dts.includes(iface), "Interface or Type \"" + iface + "\" must exist in index.d.ts");
+}
+console.log("  ✅ All " + expectedInterfaces.length + " high-level option and return interfaces verified");
+
+// 11. Verify Dynamic Service Namespaces Interfaces
+const serviceInterfaces = [
+  "MessagingService",
+  "AuthService",
+  "BankingService",
+  "GroupsService",
+  "UsersService",
+  "PresenceService",
+  "GiftPacketService",
+  "GoldGiftPacketService"
+];
+
+for (const sIface of serviceInterfaces) {
+  assert(dts.includes(sIface), "Service interface \"" + sIface + "\" must exist in index.d.ts");
+}
+console.log("  ✅ All " + serviceInterfaces.length + " Protobuf service namespace interfaces verified");
+
 console.log("\nAll TypeScript types, autocomplete definitions, and package exports PASSED! 🚀✨\n");

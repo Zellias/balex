@@ -1,4 +1,7 @@
-/**
+import os
+import sys
+
+dts_content = '''/**
  * TypeScript Definitions for BaleX / Bale Userbot & Bot SDK
  * High-performance Node.js userbot & official bot library for Bale Messenger.
  * Supports all 53 Protobuf services, 636 RPC methods, Mini App parameter engine,
@@ -3076,3 +3079,34 @@ export function handleCommand(req: any): Promise<any>;
 export function executeMethod(method: string, params?: any): Promise<any>;
 
 export default BaleClient;
+'''
+
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+idx_dts = os.path.join(root_path, "index.d.ts")
+bale_dts = os.path.join(root_path, "bale-userbot", "index.d.ts")
+
+with open(idx_dts, "w", encoding="utf-8") as f:
+    f.write(dts_content)
+
+with open(bale_dts, "w", encoding="utf-8") as f:
+    f.write(dts_content)
+
+print(f"Written {len(dts_content)} bytes to index.d.ts and bale-userbot/index.d.ts")
+
+# Validate brace matching
+curly = 0
+parens = 0
+square = 0
+for c in dts_content:
+    if c == '{': curly += 1
+    elif c == '}': curly -= 1
+    elif c == '(': parens += 1
+    elif c == ')': parens -= 1
+    elif c == '[': square += 1
+    elif c == ']': square -= 1
+
+print(f"Brace check: curly={curly}, parens={parens}, square={square}")
+assert curly == 0, f"Unbalanced curlies: {curly}"
+assert parens == 0, f"Unbalanced parens: {parens}"
+assert square == 0, f"Unbalanced square brackets: {square}"
+print("All braces are 100% perfectly balanced!")

@@ -1,6 +1,6 @@
 /**
- * TypeScript Definitions for BaleX / Bale Userbot
- * High-performance Node.js userbot & client library for Bale Messenger.
+ * TypeScript Definitions for BaleX / Bale Userbot & Bot SDK
+ * High-performance Node.js userbot & official bot library for Bale Messenger.
  * Supports all 53 Protobuf services, 636 RPC methods, Mini App parameter engine,
  * Shetab Banking, Gift Packets, and 60+ WebSocket event streams.
  */
@@ -13,16 +13,25 @@ import { EventEmitter } from 'events';
 // Enums & Protocol Constants
 // ==========================================
 
+/**
+ * Peer type enumeration: 1 for Private chat (User), 2 for Group chat.
+ */
 export enum PeerType {
   PRIVATE = 1,
   GROUP = 2
 }
 
+/**
+ * Extended peer type for internal catalog resolution.
+ */
 export enum ExPeerType {
   USER = 1,
   GROUP = 2
 }
 
+/**
+ * Typing action state for userbot presence updates.
+ */
 export enum TypingType {
   TEXT = 0,
   RECORD_AUDIO = 1,
@@ -34,6 +43,9 @@ export enum TypingType {
   CHOOSE_CONTACT = 7
 }
 
+/**
+ * Device platform enumeration for session handshake.
+ */
 export enum DeviceType {
   GENERIC = 0,
   PC = 1,
@@ -42,12 +54,18 @@ export enum DeviceType {
   TABLET = 4
 }
 
+/**
+ * Display mode for launching Mini Apps / WebApps in Bale.
+ */
 export enum ScreenMode {
   FULLSCREEN = 0,
   FULL_SIZE = 1,
   COMPACT = 2
 }
 
+/**
+ * Mini App bidirectional event constants for communication between host and web view.
+ */
 export const MiniAppEvent: {
   // Host -> MiniApp
   readonly SETUP_BACK_BUTTON: 'web_app_setup_back_button';
@@ -81,6 +99,9 @@ export const MiniAppEvent: {
   readonly CUSTOM_METHOD_INVOKED: 'customMethodInvoked';
 };
 
+/**
+ * Theme color parameters for Mini App appearance.
+ */
 export interface ThemeParams {
   bg_color?: string;
   bgColor?: string;
@@ -115,17 +136,38 @@ export interface ThemeParams {
   [key: string]: any;
 }
 
+/**
+ * Default theme parameters matching standard dark mode in Bale.
+ */
 export const DefaultThemeParams: ThemeParams;
 
 // ==========================================
 // Core Entities & Messaging Types
 // ==========================================
 
+/**
+ * Bale Peer reference identifying a chat dialog.
+ */
 export interface Peer {
   type: PeerType | number;
   id: number;
 }
 
+/**
+ * User avatar file information.
+ */
+export interface UserAvatar {
+  fileId?: number | string | bigint;
+  accessHash?: number | string | bigint;
+  fileSize?: number;
+  small?: { fileId: number | string | bigint; accessHash: number | string | bigint };
+  big?: { fileId: number | string | bigint; accessHash: number | string | bigint };
+  [key: string]: any;
+}
+
+/**
+ * User profile entity.
+ */
 export interface User {
   id: number;
   accessHash?: bigint | string;
@@ -133,25 +175,58 @@ export interface User {
   localName?: string;
   username?: string;
   phone?: string;
-  avatar?: any;
+  avatar?: UserAvatar;
+  isBot?: boolean;
+  about?: string;
+  [key: string]: any;
 }
 
+/**
+ * Group or channel entity.
+ */
 export interface Group {
   id: number;
   accessHash?: bigint | string;
   title: string;
-  avatar?: any;
+  avatar?: UserAvatar;
   memberCount?: number;
   isChannel?: boolean;
+  about?: string;
+  creatorUserId?: number;
+  [key: string]: any;
 }
 
+/**
+ * Dialog / conversation entry in chat list.
+ */
 export interface Dialog {
   peer: Peer;
   unreadCount?: number;
-  lastMessage?: any;
+  lastMessage?: MessageEvent | any;
   sortDate?: bigint | number;
 }
 
+/**
+ * Result returned by loadDialogs.
+ */
+export interface DialogsResult {
+  dialogs: Dialog[];
+  users: User[];
+  groups: Group[];
+}
+
+/**
+ * Result returned by loadHistory.
+ */
+export interface HistoryResult {
+  history: MessageEvent[] | any[];
+  users: User[];
+  groups: Group[];
+}
+
+/**
+ * Options for sending or replying with photo attachment.
+ */
 export interface PhotoAttachment {
   fileId: number | string | bigint;
   accessHash: number | string | bigint;
@@ -160,8 +235,12 @@ export interface PhotoAttachment {
   height?: number;
   caption?: string;
   name?: string;
+  mimeType?: string;
 }
 
+/**
+ * Options for sending or replying with voice note attachment.
+ */
 export interface VoiceAttachment {
   fileId: number | string | bigint;
   accessHash: number | string | bigint;
@@ -169,8 +248,13 @@ export interface VoiceAttachment {
   duration?: number;
   waveForm?: Buffer | Uint8Array;
   caption?: string;
+  name?: string;
+  mimeType?: string;
 }
 
+/**
+ * Options for sending or replying with audio / music attachment.
+ */
 export interface AudioAttachment {
   fileId: number | string | bigint;
   accessHash: number | string | bigint;
@@ -180,8 +264,12 @@ export interface AudioAttachment {
   performer?: string;
   caption?: string;
   name?: string;
+  mimeType?: string;
 }
 
+/**
+ * Options for sending or replying with video attachment.
+ */
 export interface VideoAttachment {
   fileId: number | string | bigint;
   accessHash: number | string | bigint;
@@ -191,8 +279,12 @@ export interface VideoAttachment {
   height?: number;
   caption?: string;
   name?: string;
+  mimeType?: string;
 }
 
+/**
+ * Options for sending or replying with document / file attachment.
+ */
 export interface DocumentAttachment {
   fileId: number | string | bigint;
   accessHash: number | string | bigint;
@@ -202,6 +294,9 @@ export interface DocumentAttachment {
   caption?: string;
 }
 
+/**
+ * Cash gift packet message payload.
+ */
 export interface GiftPacketMessage {
   giftCount: number;
   totalAmount: bigint;
@@ -213,10 +308,16 @@ export interface GiftPacketMessage {
   showTotalAmount?: boolean;
 }
 
+/**
+ * Gold gift packet message payload.
+ */
 export interface GoldGiftPacketMessage {
   packetId: bigint | string;
 }
 
+/**
+ * Winner / receiver entry in a gift packet.
+ */
 export interface GiftReceiver {
   userId: number;
   amount: bigint;
@@ -224,6 +325,9 @@ export interface GiftReceiver {
   rank: number;
 }
 
+/**
+ * Response structure when opening or querying a cash gift packet.
+ */
 export interface OpenGiftPacketResponse {
   giftReceivers: GiftReceiver[];
   receivers: GiftReceiver[];
@@ -239,6 +343,9 @@ export interface OpenGiftPacketResponse {
   message: string;
 }
 
+/**
+ * Response structure when opening or querying a gold gift packet.
+ */
 export interface OpenGoldGiftPacketResponse {
   openedCount: number;
   selfWinAmount: bigint;
@@ -249,10 +356,266 @@ export interface OpenGoldGiftPacketResponse {
   status: number;
 }
 
+/**
+ * Response containing list of winner IDs for gold packets.
+ */
 export interface GetWinnerIDsResponse {
   winnerIds: (number | bigint)[];
 }
 
+/**
+ * Options for sending cash gift packets.
+ */
+export interface SendGiftPacketOptions {
+  peer: number | Peer;
+  amount: number | string | bigint;
+  count?: number;
+  message?: string;
+  sourceWalletId?: string;
+  givingType?: number;
+  coverId?: number;
+  showTotalAmount?: boolean;
+}
+
+/**
+ * Result returned after dispatching a cash gift packet.
+ */
+export interface GiftPacketResult {
+  randomId: bigint | string;
+  date: bigint | number;
+  packetId?: bigint | string;
+  [key: string]: any;
+}
+
+/**
+ * Options for sending gold gift packets.
+ */
+export interface SendGoldGiftPacketOptions {
+  peer: number | Peer;
+  amountMilligrams: number | string | bigint;
+  count?: number;
+  message?: string;
+  givingType?: number;
+}
+
+/**
+ * Options for sending gold packets via sendGoldPacket.
+ */
+export interface SendGoldPacketOptions {
+  peerId: number | Peer;
+  goldMilligrams: number | string | bigint;
+  message?: string;
+  packetType?: number;
+}
+
+/**
+ * Result returned after sending a gold gift packet.
+ */
+export interface GoldGiftPacketResult {
+  giftPacketId: bigint;
+  [key: string]: any;
+}
+
+// ==========================================
+// Shetab Banking & Card Interfaces
+// ==========================================
+
+/**
+ * Parameters for cardholder inquiry (نام صاحب حساب).
+ */
+export interface CardInquiryOptions {
+  sourcePan?: string;
+  sourceCardNumber?: string;
+  destinationPan?: string;
+  destinationCardNumber?: string;
+  amountRials?: number | string | bigint;
+  amount?: number | string | bigint;
+  [key: string]: any;
+}
+
+/**
+ * Result of cardholder name inquiry.
+ */
+export interface CardInquiryResult {
+  cardHolderName: string;
+  inquiryToken: string;
+  isSuccess?: boolean;
+  traceNumber?: string;
+  [key: string]: any;
+}
+
+/**
+ * Parameters for executing card-to-card money transfer (کارت به کارت شتاب).
+ */
+export interface CardTransferOptions {
+  sourcePan: string;
+  destinationPan: string;
+  amountRials: number | string | bigint;
+  cvv2: string;
+  expireDate: string;
+  pin2: string;
+  inquiryToken: string;
+  description?: string;
+  [key: string]: any;
+}
+
+/**
+ * Result of card-to-card transfer execution.
+ */
+export interface CardTransferResult {
+  refNumber?: string;
+  traceNumber?: string;
+  date?: string;
+  status?: string;
+  balanceRials?: string;
+  availableBalanceRials?: string;
+  [key: string]: any;
+}
+
+/**
+ * Parameters for inquiring card balance.
+ */
+export interface CardBalanceOptions {
+  sourcePan: string;
+  pin2: string;
+  cvv2: string;
+  expireDate: string;
+  [key: string]: any;
+}
+
+/**
+ * Result of card balance inquiry.
+ */
+export interface CardBalanceResult {
+  balanceRials: string;
+  availableBalanceRials: string;
+  [key: string]: any;
+}
+
+// ==========================================
+// Social, Folders, Polls & Story Interfaces
+// ==========================================
+
+/**
+ * Chat folder / tab definition.
+ */
+export interface Folder {
+  id: number | string;
+  name: string;
+  peers: Peer[];
+  isReserved?: boolean;
+  [key: string]: any;
+}
+
+/**
+ * Single option in a poll.
+ */
+export interface PollOption {
+  id: number;
+  text: string;
+  votes?: number;
+  [key: string]: any;
+}
+
+/**
+ * Poll structure.
+ */
+export interface Poll {
+  id: bigint | string;
+  question: string;
+  options: PollOption[];
+  isAnonymous?: boolean;
+  isMultipleChoice?: boolean;
+  isQuiz?: boolean;
+  isClosed?: boolean;
+  [key: string]: any;
+}
+
+/**
+ * Poll results with vote tallies.
+ */
+export interface PollResults {
+  pollId: bigint | string;
+  totalVotes: number;
+  options: PollOption[];
+  [key: string]: any;
+}
+
+/**
+ * Scheduled message item.
+ */
+export interface ScheduledMessage {
+  id: string | number;
+  peer: Peer;
+  text: string;
+  sendDate: number | Date;
+  [key: string]: any;
+}
+
+/**
+ * Story item uploaded or viewed.
+ */
+export interface StoryItem {
+  id: string | number | bigint;
+  userId: number;
+  date: number;
+  caption?: string;
+  media?: any;
+  viewsCount?: number;
+  likesCount?: number;
+  [key: string]: any;
+}
+
+/**
+ * Viewer entry for a story.
+ */
+export interface StoryViewer {
+  userId: number;
+  date: number;
+  [key: string]: any;
+}
+
+/**
+ * Options for sending a story.
+ */
+export interface SendStoryOptions {
+  media?: any;
+  caption?: string;
+  privacy?: number;
+  duration?: number;
+  [key: string]: any;
+}
+
+/**
+ * Wallet credit balance.
+ */
+export interface WalletCredit {
+  credit: bigint | string | number;
+  walletId?: string;
+  currency?: string;
+  [key: string]: any;
+}
+
+/**
+ * User wallet points.
+ */
+export interface WalletPoints {
+  points: number;
+  [key: string]: any;
+}
+
+/**
+ * Username availability check result.
+ */
+export interface CheckUsernameResult {
+  isAvailable: boolean;
+  username?: string;
+  [key: string]: any;
+}
+
+/**
+ * Service message metadata container.
+ */
 export interface ServiceMessage {
   text?: string;
   ext?: {
@@ -272,11 +635,39 @@ export interface ServiceMessage {
   };
 }
 
+/**
+ * Options when replying to a message.
+ */
 export interface MessageReplyOptions {
   humanize?: boolean;
   simulateTyping?: boolean;
   typingType?: TypingType | number;
   quoteMessageId?: string | number | bigint;
+}
+
+/**
+ * Options for sendMessage.
+ */
+export interface SendMessageOptions {
+  replyToMessageId?: string | number | bigint;
+  humanize?: boolean;
+  simulateTyping?: boolean;
+  typingType?: TypingType | number;
+  isGroup?: boolean;
+  isSilent?: boolean;
+  mentions?: number[];
+  [key: string]: any;
+}
+
+/**
+ * Result returned after sending a text message.
+ */
+export interface SentMessageResult {
+  rid: string;
+  date: bigint | number;
+  peer: Peer;
+  text: string;
+  [key: string]: any;
 }
 
 /**
@@ -305,12 +696,12 @@ export interface MessageEvent {
   serviceMessage: ServiceMessage | null;
 
   // Actions
-  reply(replyText: string, options?: MessageReplyOptions): Promise<any>;
-  replyPhoto(options: PhotoAttachment): Promise<any>;
-  replyVoice(options: VoiceAttachment): Promise<any>;
-  replyAudio(options: AudioAttachment): Promise<any>;
-  replyVideo(options: VideoAttachment): Promise<any>;
-  replyDocument(options: DocumentAttachment): Promise<any>;
+  reply(replyText: string, options?: MessageReplyOptions): Promise<SentMessageResult>;
+  replyPhoto(options: PhotoAttachment): Promise<Buffer>;
+  replyVoice(options: VoiceAttachment): Promise<Buffer>;
+  replyAudio(options: AudioAttachment): Promise<Buffer>;
+  replyVideo(options: VideoAttachment): Promise<Buffer>;
+  replyDocument(options: DocumentAttachment): Promise<Buffer>;
   edit(newText: string): Promise<any>;
   markAsReceived(): Promise<any>;
   markAsRead(): Promise<any>;
@@ -418,6 +809,42 @@ export interface ServiceMessageEvent extends ServiceMessage {
   message?: MessageEvent;
 }
 
+export interface GroupCreatedEvent {
+  groupId: number;
+  title: string;
+  creatorUserId: number;
+  memberUserIds: number[];
+  [key: string]: any;
+}
+
+export interface UserInvitedEvent {
+  groupId: number;
+  inviterUserId: number;
+  invitedUserId: number;
+  [key: string]: any;
+}
+
+export interface UserKickedEvent {
+  groupId: number;
+  adminUserId: number;
+  kickedUserId: number;
+  [key: string]: any;
+}
+
+export interface UserLeftEvent {
+  groupId: number;
+  userId: number;
+  [key: string]: any;
+}
+
+export interface BotCallbackQueryEvent {
+  peer: Peer;
+  messageId: string | number;
+  data: string | Buffer;
+  userId: number;
+  [key: string]: any;
+}
+
 export interface GenericUpdate {
   type?: string;
   data?: any;
@@ -441,6 +868,9 @@ export interface UpdateContainer {
   raw?: Buffer;
 }
 
+/**
+ * Event map defining listener arguments for all BaleClient events.
+ */
 export interface BaleEventMap {
   message: MessageEvent;
   giftPacket: MessageEvent;
@@ -448,10 +878,10 @@ export interface BaleEventMap {
   giftPacketOpened: GiftPacketOpenedEvent;
   miniAppData: MiniAppDataEvent;
   serviceMessage: ServiceMessageEvent;
-  groupCreated: any;
-  userInvited: any;
-  userKicked: any;
-  userLeft: any;
+  groupCreated: GroupCreatedEvent;
+  userInvited: UserInvitedEvent;
+  userKicked: UserKickedEvent;
+  userLeft: UserLeftEvent;
   messageEdit: MessageEditUpdate;
   messageDelete: MessageDeleteUpdate;
   chatClear: ChatClearUpdate;
@@ -483,7 +913,7 @@ export interface BaleEventMap {
   userOffline: UserOfflineUpdate;
   userLastSeen: GenericUpdate;
   presence: any;
-  botCallbackQuery: any;
+  botCallbackQuery: BotCallbackQueryEvent;
   userAvatarChanged: GenericUpdate;
   userNameChanged: GenericUpdate;
   userLocalNameChanged: GenericUpdate;
@@ -663,9 +1093,157 @@ export interface BaleClientOptions {
 }
 
 // ==========================================
+// Protobuf Namespace Service Interfaces
+// ==========================================
+
+/**
+ * Bale Protobuf Messaging service namespace.
+ */
+export interface MessagingService {
+  sendMessage(payload: any, metadata?: any): Promise<any>;
+  SendMessage(payload: any, metadata?: any): Promise<any>;
+  loadHistory(payload: any, metadata?: any): Promise<any>;
+  LoadHistory(payload: any, metadata?: any): Promise<any>;
+  loadDialogs(payload: any, metadata?: any): Promise<any>;
+  LoadDialogs(payload: any, metadata?: any): Promise<any>;
+  deleteMessage(payload: any, metadata?: any): Promise<any>;
+  DeleteMessage(payload: any, metadata?: any): Promise<any>;
+  editMessage(payload: any, metadata?: any): Promise<any>;
+  EditMessage(payload: any, metadata?: any): Promise<any>;
+  pinMessage(payload: any, metadata?: any): Promise<any>;
+  PinMessage(payload: any, metadata?: any): Promise<any>;
+  clearChat(payload: any, metadata?: any): Promise<any>;
+  ClearChat(payload: any, metadata?: any): Promise<any>;
+  createFolder(payload: any, metadata?: any): Promise<any>;
+  CreateFolder(payload: any, metadata?: any): Promise<any>;
+  deleteFolder(payload: any, metadata?: any): Promise<any>;
+  DeleteFolder(payload: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+/**
+ * Bale Protobuf Auth service namespace.
+ */
+export interface AuthService {
+  startPhoneAuth(payload: any, metadata?: any): Promise<any>;
+  StartPhoneAuth(payload: any, metadata?: any): Promise<any>;
+  validateCode(payload: any, metadata?: any): Promise<any>;
+  ValidateCode(payload: any, metadata?: any): Promise<any>;
+  validatePassword(payload: any, metadata?: any): Promise<any>;
+  ValidatePassword(payload: any, metadata?: any): Promise<any>;
+  getAuthSessions(payload?: any, metadata?: any): Promise<any>;
+  GetAuthSessions(payload?: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+/**
+ * Bale Protobuf Banking / Bank service namespace.
+ */
+export interface BankingService {
+  inquireDestinationPan(payload: any, metadata?: any): Promise<any>;
+  InquireDestinationPan(payload: any, metadata?: any): Promise<any>;
+  transferMoneyByCard(payload: any, metadata?: any): Promise<any>;
+  TransferMoneyByCard(payload: any, metadata?: any): Promise<any>;
+  getCardRemain(payload: any, metadata?: any): Promise<any>;
+  GetCardRemain(payload: any, metadata?: any): Promise<any>;
+  getPaymentToken(payload?: any, metadata?: any): Promise<any>;
+  GetPaymentToken(payload?: any, metadata?: any): Promise<any>;
+  getOTPToken(payload?: any, metadata?: any): Promise<any>;
+  GetOTPToken(payload?: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+/**
+ * Bale Protobuf Groups service namespace.
+ */
+export interface GroupsService {
+  createGroup(payload: any, metadata?: any): Promise<any>;
+  CreateGroup(payload: any, metadata?: any): Promise<any>;
+  editGroupTitle(payload: any, metadata?: any): Promise<any>;
+  EditGroupTitle(payload: any, metadata?: any): Promise<any>;
+  editGroupAbout(payload: any, metadata?: any): Promise<any>;
+  EditGroupAbout(payload: any, metadata?: any): Promise<any>;
+  inviteMembers(payload: any, metadata?: any): Promise<any>;
+  InviteMembers(payload: any, metadata?: any): Promise<any>;
+  kickMember(payload: any, metadata?: any): Promise<any>;
+  KickMember(payload: any, metadata?: any): Promise<any>;
+  fetchGroupAdmins(payload: any, metadata?: any): Promise<any>;
+  FetchGroupAdmins(payload: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+/**
+ * Bale Protobuf Users service namespace.
+ */
+export interface UsersService {
+  loadFullUsers(payload: any, metadata?: any): Promise<any>;
+  LoadFullUsers(payload: any, metadata?: any): Promise<any>;
+  getContacts(payload?: any, metadata?: any): Promise<any>;
+  GetContacts(payload?: any, metadata?: any): Promise<any>;
+  addContact(payload: any, metadata?: any): Promise<any>;
+  AddContact(payload: any, metadata?: any): Promise<any>;
+  removeContact(payload: any, metadata?: any): Promise<any>;
+  RemoveContact(payload: any, metadata?: any): Promise<any>;
+  searchContacts(payload: any, metadata?: any): Promise<any>;
+  SearchContacts(payload: any, metadata?: any): Promise<any>;
+  editName(payload: any, metadata?: any): Promise<any>;
+  EditName(payload: any, metadata?: any): Promise<any>;
+  editAbout(payload: any, metadata?: any): Promise<any>;
+  EditAbout(payload: any, metadata?: any): Promise<any>;
+  blockUser(payload: any, metadata?: any): Promise<any>;
+  BlockUser(payload: any, metadata?: any): Promise<any>;
+  unblockUser(payload: any, metadata?: any): Promise<any>;
+  UnblockUser(payload: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+/**
+ * Bale Protobuf Presence service namespace.
+ */
+export interface PresenceService {
+  setOnline(payload: any, metadata?: any): Promise<any>;
+  SetOnline(payload: any, metadata?: any): Promise<any>;
+  stopTyping(payload: any, metadata?: any): Promise<any>;
+  StopTyping(payload: any, metadata?: any): Promise<any>;
+  getUsersPresence(payload: any, metadata?: any): Promise<any>;
+  GetUsersPresence(payload: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+/**
+ * Bale Protobuf Gift Packet service namespace.
+ */
+export interface GiftPacketService {
+  sendGiftPacketWithWallet(payload: any, metadata?: any): Promise<any>;
+  SendGiftPacketWithWallet(payload: any, metadata?: any): Promise<any>;
+  openGiftPacket(payload: any, metadata?: any): Promise<any>;
+  OpenGiftPacket(payload: any, metadata?: any): Promise<any>;
+  getGiftPacketPaymentToken(payload?: any, metadata?: any): Promise<any>;
+  GetGiftPacketPaymentToken(payload?: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+/**
+ * Bale Protobuf Gold Gift Packet service namespace.
+ */
+export interface GoldGiftPacketService {
+  sendGoldGiftPacket(payload: any, metadata?: any): Promise<any>;
+  SendGoldGiftPacket(payload: any, metadata?: any): Promise<any>;
+  openGoldGiftPacket(payload: any, metadata?: any): Promise<any>;
+  OpenGoldGiftPacket(payload: any, metadata?: any): Promise<any>;
+  getWinnerIDs(payload: any, metadata?: any): Promise<any>;
+  GetWinnerIDs(payload: any, metadata?: any): Promise<any>;
+  [method: string]: (payload?: any, metadata?: any) => Promise<any>;
+}
+
+// ==========================================
 // BaleClient Class
 // ==========================================
 
+/**
+ * BaleClient is the primary Userbot client class for Bale Messenger.
+ * Connects directly over WebSockets and executes Protobuf RPCs with humanization & anti-ban protection.
+ */
 export class BaleClient extends EventEmitter {
   options: BaleClientOptions;
   session: Session;
@@ -675,16 +1253,17 @@ export class BaleClient extends EventEmitter {
   services: Record<string, any>;
 
   // Dynamic 53 Service Namespaces
-  messaging: any;
-  auth: any;
-  banking: any;
-  giftPacket: any;
-  goldGiftPacket: any;
+  messaging: MessagingService;
+  auth: AuthService;
+  banking: BankingService;
+  bank: BankingService;
+  giftPacket: GiftPacketService;
+  goldGiftPacket: GoldGiftPacketService;
   appzar: any;
   ketf: any;
-  groups: any;
-  presence: any;
-  users: any;
+  groups: GroupsService;
+  presence: PresenceService;
+  users: UsersService;
   files: any;
   story: any;
   poll: any;
@@ -695,171 +1274,414 @@ export class BaleClient extends EventEmitter {
 
   constructor(options?: BaleClientOptions);
 
+  /**
+   * Whether the WebSocket connection is actively open and ready.
+   */
   get isConnected(): boolean;
+
+  /**
+   * The currently logged in user profile, or null if unauthenticated.
+   */
   get me(): User | null;
 
-  connect(): Promise<any>;
+  /**
+   * Connect to Bale WebSocket server and perform session handshake.
+   */
+  connect(): Promise<this>;
+
+  /**
+   * Disconnect from Bale WebSocket server.
+   */
   disconnect(): void;
 
   // ==========================================
   // Authentication Flow
   // ==========================================
 
+  /**
+   * Request an SMS verification code for a phone number.
+   * @param phoneNumber Phone number in international format, e.g. "+989123456789"
+   */
   sendCode(phoneNumber: string): Promise<{ transactionHash: string }>;
+
+  /**
+   * Validate SMS code and sign in.
+   * @param code The SMS verification code
+   * @param transactionHash Transaction hash from sendCode
+   */
   signIn(code: string | number, transactionHash?: string): Promise<any>;
+
+  /**
+   * Complete 2FA password login if enabled on the account.
+   * @param password Two-factor authentication password
+   * @param transactionHash Transaction hash
+   */
   signInWithPassword(password: string, transactionHash?: string): Promise<any>;
+
+  /**
+   * Log out of the current session and invalidate tokens.
+   */
   logout(): Promise<any>;
 
   // ==========================================
   // Messaging Operations
   // ==========================================
 
+  /**
+   * Send a text message to a user or group dialog.
+   * @param peer User ID, Group ID, or Peer object
+   * @param text Message body text
+   * @param options Message options including humanize overrides and quote replies
+   */
   sendMessage(
     peer: number | Peer,
     text: string,
-    options?: {
-      replyToMessageId?: string | number | bigint;
-      humanize?: boolean;
-      simulateTyping?: boolean;
-      typingType?: TypingType | number;
-    }
-  ): Promise<any>;
+    options?: SendMessageOptions
+  ): Promise<SentMessageResult>;
+
+  /**
+   * Quick shortcut to send a text message.
+   * @param peerId User or Group ID
+   * @param text Message body text
+   * @param isGroup Set to true if target is a group
+   */
   sendTextMessage(
     peer: number | Peer,
     text: string,
-    options?: {
-      replyToMessageId?: string | number | bigint;
-      humanize?: boolean;
-      simulateTyping?: boolean;
-      typingType?: TypingType | number;
-    }
-  ): Promise<any>;
+    isGroup?: boolean
+  ): Promise<SentMessageResult>;
 
-  sendPhoto(peer: number | Peer, options: PhotoAttachment): Promise<any>;
-  sendVoice(peer: number | Peer, options: VoiceAttachment): Promise<any>;
-  sendAudio(peer: number | Peer, options: AudioAttachment): Promise<any>;
-  sendVideo(peer: number | Peer, options: VideoAttachment): Promise<any>;
-  sendDocument(peer: number | Peer, options: DocumentAttachment): Promise<any>;
+  /**
+   * Send a photo to a user or group.
+   */
+  sendPhoto(peer: number | Peer, options: PhotoAttachment, clientOptions?: SendMessageOptions): Promise<Buffer>;
+
+  /**
+   * Send a voice note to a user or group.
+   */
+  sendVoice(peer: number | Peer, options: VoiceAttachment, clientOptions?: SendMessageOptions): Promise<Buffer>;
+
+  /**
+   * Send an audio / music track to a user or group.
+   */
+  sendAudio(peer: number | Peer, options: AudioAttachment, clientOptions?: SendMessageOptions): Promise<Buffer>;
+
+  /**
+   * Send a video to a user or group.
+   */
+  sendVideo(peer: number | Peer, options: VideoAttachment, clientOptions?: SendMessageOptions): Promise<Buffer>;
+
+  /**
+   * Send a document / file to a user or group.
+   */
+  sendDocument(peer: number | Peer, options: DocumentAttachment, clientOptions?: SendMessageOptions): Promise<Buffer>;
+
+  /**
+   * Send a sticker to a user or group.
+   */
   sendSticker(
     peer: number | Peer,
     stickerId: number | string,
-    accessHash: number | string | bigint,
+    accessHash?: number | string | bigint,
     stickerPackId?: number | string
-  ): Promise<any>;
+  ): Promise<Buffer>;
 
-  loadDialogs(limit?: number, minDate?: number | bigint): Promise<{ dialogs: Dialog[]; users: User[]; groups: Group[] }>;
-  loadHistory(peer: number | Peer, limit?: number, endDate?: number | bigint): Promise<any>;
+  /**
+   * Load dialogs / chat list.
+   */
+  loadDialogs(limit?: number, minDate?: number | bigint | string): Promise<DialogsResult>;
 
+  /**
+   * Load message history for a peer dialog.
+   */
+  loadHistory(peer: number | Peer, limit?: number, endDate?: number | bigint | string): Promise<HistoryResult>;
+
+  /**
+   * Mark messages as received up to a specified timestamp.
+   */
   markAsReceived(peer: number | Peer, date: number | bigint): Promise<any>;
+
+  /**
+   * Mark messages as read up to a specified timestamp.
+   */
   markAsRead(peer: number | Peer, date: number | bigint): Promise<any>;
+
+  /**
+   * Send typing or media recording action to a peer.
+   */
   sendTyping(peer: number | Peer, durationMs?: number, typingType?: TypingType | number): Promise<any>;
+
+  /**
+   * Stop typing action in a peer dialog.
+   */
   stopTyping(peer: number | Peer, typingType?: TypingType | number): Promise<any>;
+
+  /**
+   * Set presence online status.
+   */
   setOnline(isOnline?: boolean, timeout?: number): Promise<any>;
 
+  /**
+   * Edit an existing message text.
+   */
   editMessage(peer: number | Peer, messageId: string | number, newText: string): Promise<any>;
+
+  /**
+   * Forward one or more messages to another dialog.
+   */
   forwardMessages(
     toPeer: number | Peer,
     fromPeer: number | Peer,
     mids: (string | number)[],
     options?: { hideSender?: boolean }
   ): Promise<any>;
+
+  /**
+   * Pin a message in a conversation.
+   */
   pinMessage(peer: number | Peer, messageId: string | number): Promise<any>;
+
+  /**
+   * Delete one or more messages by their IDs.
+   */
   deleteMessages(peer: number | Peer, messageIds: (string | number)[]): Promise<any>;
+
+  /**
+   * Clear all messages in a conversation dialog.
+   */
   clearChat(peer: number | Peer): Promise<any>;
 
   // ==========================================
   // Group & Channel Administration
   // ==========================================
 
-  createGroup(title: string, userIds?: number[]): Promise<any>;
+  /**
+   * Create a new group with a title and optional initial members.
+   */
+  createGroup(title: string, userIds?: number[]): Promise<{ group: Group; userIds: number[] } | any>;
+
+  /**
+   * Invite members into an existing group.
+   */
   inviteMembers(groupId: number | string, userIds: number[]): Promise<any>;
+
+  /**
+   * Remove / kick a member from a group.
+   */
   kickMember(groupId: number | string, userId: number | string): Promise<any>;
+
+  /**
+   * Change group title.
+   */
   setGroupTitle(groupId: number | string, title: string): Promise<any>;
+
+  /**
+   * Leave a group.
+   */
   leaveGroup(groupId: number | string): Promise<any>;
+
+  /**
+   * Retrieve group details by ID.
+   */
   getGroup(groupId: number | string): Promise<Group>;
 
   // ==========================================
   // Contacts & Profile Management
   // ==========================================
 
+  /**
+   * Fetch full user profile by user ID.
+   */
   getUser(userId: number | string): Promise<User>;
+
+  /**
+   * Fetch user contact list.
+   */
   getContacts(): Promise<User[]>;
+
+  /**
+   * Add a contact by phone number and optional name.
+   */
   addContact(phone: string, name?: string): Promise<any>;
+
+  /**
+   * Add a contact by user ID and access hash.
+   */
   addContactByUid(uid: number | string, accessHash?: bigint | number | string): Promise<any>;
-  importContacts(contacts: Array<{ phone: string; name?: string }>): Promise<any>;
+
+  /**
+   * Bulk import contacts into address book.
+   */
+  importContacts(contacts: Array<{ phone: string; name?: string }>): Promise<{ users: User[] } | any>;
+
+  /**
+   * Remove a contact from address book.
+   */
   removeContact(userId: number | string, accessHash?: bigint | number | string): Promise<any>;
+
+  /**
+   * Search contacts by name or query string.
+   */
   searchContacts(query: string): Promise<User[]>;
 
+  /**
+   * Edit user profile display name.
+   */
   editName(name: string): Promise<any>;
+
+  /**
+   * Edit user profile about / bio text.
+   */
   editAbout(about: string): Promise<any>;
+
+  /**
+   * Edit user public @username handle.
+   */
   editUsername(username: string): Promise<any>;
-  checkUsername(username: string): Promise<{ isAvailable: boolean }>;
+
+  /**
+   * Check if a username is available.
+   */
+  checkUsername(username: string): Promise<CheckUsernameResult>;
+
+  /**
+   * Block a user.
+   */
   blockUser(userId: number | string): Promise<any>;
+
+  /**
+   * Unblock a user.
+   */
   unblockUser(userId: number | string): Promise<any>;
+
+  /**
+   * Load list of blocked users.
+   */
   loadBlockedUsers(): Promise<User[]>;
 
   // ==========================================
   // Reactions & Folders
   // ==========================================
 
+  /**
+   * Add an emoji reaction to a message.
+   */
   setReaction(peer: number | Peer, messageId: string | number, emoji: string): Promise<any>;
-  removeReaction(peer: number | Peer, messageId: string | number, emoji: string): Promise<any>;
-  getReactions(peer: number | Peer, messageIds: (string | number)[]): Promise<any>;
 
-  createFolder(name: string, peers: (number | Peer)[]): Promise<any>;
-  loadFolders(): Promise<any[]>;
+  /**
+   * Remove an emoji reaction from a message.
+   */
+  removeReaction(peer: number | Peer, messageId: string | number, emoji: string): Promise<any>;
+
+  /**
+   * Query reaction counters and list for messages.
+   */
+  getReactions(peer: number | Peer, messageIds: (string | number)[]): Promise<{ reactions: Array<{ peer: Peer; rid: string; reactions: any[] }> }>;
+
+  /**
+   * Create a new chat folder / tab.
+   */
+  createFolder(name: string, peers: (number | Peer)[]): Promise<Folder>;
+
+  /**
+   * Load all user folders / tabs.
+   */
+  loadFolders(): Promise<Folder[]>;
+
+  /**
+   * Delete a folder by ID.
+   */
   deleteFolder(folderId: number | string): Promise<any>;
 
   // ==========================================
   // Polls & Bot Interaction
   // ==========================================
 
+  /**
+   * Send a poll to a chat.
+   */
   sendPoll(
     peer: number | Peer,
     question: string,
     options: string[],
     pollOptions?: { isAnonymous?: boolean; isMultipleChoice?: boolean; isQuiz?: boolean }
-  ): Promise<any>;
-  createPoll(options: any): Promise<any>;
-  closePoll(pollId: number | string | bigint): Promise<any>;
-  getPollResults(pollId: number | string | bigint): Promise<any>;
+  ): Promise<{ pollId: bigint | string; peer: Peer }>;
 
-  getWalletCredit(): Promise<any>;
-  getWalletPoints(): Promise<any>;
+  /**
+   * Create a poll with custom settings.
+   */
+  createPoll(options: {
+    question: string;
+    options: string[];
+    isAnonymous?: boolean;
+    isMultipleChoice?: boolean;
+    isQuiz?: boolean;
+    [key: string]: any;
+  }): Promise<Poll>;
+
+  /**
+   * Close an active poll.
+   */
+  closePoll(pollId: number | string | bigint): Promise<any>;
+
+  /**
+   * Fetch current results for a poll.
+   */
+  getPollResults(pollId: number | string | bigint): Promise<PollResults>;
+
+  /**
+   * Fetch current wallet credit balance.
+   */
+  getWalletCredit(): Promise<WalletCredit>;
+
+  /**
+   * Fetch user reward points.
+   */
+  getWalletPoints(): Promise<WalletPoints>;
+
+  /**
+   * Trigger an inline button callback query to a bot.
+   */
   sendInlineCallback(peer: number | Peer, messageId: number | string, data: string | Buffer): Promise<any>;
 
   // ==========================================
   // Shetab Banking & Card-to-Card
   // ==========================================
 
-  inquireDestinationPan(sourcePan: string, destinationPan: string, amountRials: number | string | bigint): Promise<{ cardHolderName: string; inquiryToken: string }>;
-  transferMoneyByCard(options: {
-    sourcePan: string;
-    destinationPan: string;
-    amountRials: number | string | bigint;
-    cvv2: string;
-    expireDate: string;
-    pin2: string;
-    inquiryToken: string;
-    description?: string;
-  }): Promise<any>;
-  getCardBalance(options: { sourcePan: string; pin2: string; cvv2: string; expireDate: string }): Promise<{ balanceRials: string; availableBalanceRials: string }>;
+  /**
+   * Inquire destination cardholder name from Shetab (استعلام نام دارنده کارت).
+   * Supports both object options `{ sourcePan, destinationPan, amountRials }`
+   * and positional arguments `(sourcePan, destinationPan, amountRials)`.
+   */
+  inquireDestinationPan(options: CardInquiryOptions): Promise<CardInquiryResult>;
+  inquireDestinationPan(
+    sourcePan: string,
+    destinationPan: string,
+    amountRials: number | string | bigint
+  ): Promise<CardInquiryResult>;
+
+  /**
+   * Execute card-to-card money transfer through Shetab (کارت به کارت شتاب).
+   */
+  transferMoneyByCard(options: CardTransferOptions): Promise<CardTransferResult>;
+
+  /**
+   * Inquire card balance through Shetab (اعلام موجودی کارت).
+   */
+  getCardBalance(options: CardBalanceOptions): Promise<CardBalanceResult>;
 
   // ==========================================
   // Cash & Gold Gift Packets
   // ==========================================
 
-  sendGiftPacket(options: {
-    peer: number | Peer;
-    amount: number | string | bigint;
-    count?: number;
-    message?: string;
-    sourceWalletId?: string;
-    givingType?: number;
-    coverId?: number;
-    showTotalAmount?: boolean;
-  }): Promise<any>;
+  /**
+   * Send a cash gift packet (پاکت هدیه ریالی).
+   */
+  sendGiftPacket(options: SendGiftPacketOptions): Promise<GiftPacketResult>;
 
+  /**
+   * Open a received cash gift packet (مشاهده پاکت هدیه).
+   */
   openGiftPacket(options: {
     peer: number | Peer;
     randomId: number | string | bigint;
@@ -869,6 +1691,9 @@ export class BaleClient extends EventEmitter {
     orderType?: number;
   }): Promise<OpenGiftPacketResponse>;
 
+  /**
+   * Claim money from an opened cash gift packet (دریافت سهم از پاکت هدیه).
+   */
   claimGiftPacket(options: {
     peer: number | Peer;
     randomId: number | string | bigint;
@@ -878,6 +1703,9 @@ export class BaleClient extends EventEmitter {
     orderType?: number;
   }): Promise<OpenGiftPacketResponse>;
 
+  /**
+   * Query details of a cash gift packet.
+   */
   getGiftPacket(options: {
     peer: number | Peer;
     randomId: number | string | bigint;
@@ -887,6 +1715,9 @@ export class BaleClient extends EventEmitter {
     orderType?: number;
   }): Promise<OpenGiftPacketResponse>;
 
+  /**
+   * Get list of receivers / winners for a cash gift packet.
+   */
   getGiftPacketReceivers(options: {
     peer: number | Peer;
     randomId: number | string | bigint;
@@ -896,33 +1727,53 @@ export class BaleClient extends EventEmitter {
     orderType?: number;
   }): Promise<GiftReceiver[]>;
 
-  getGiftPacketPaymentToken(options?: any): Promise<any>;
+  /**
+   * Fetch payment token for funding a cash gift packet.
+   */
+  getGiftPacketPaymentToken(options?: any): Promise<{ token: string; [key: string]: any }>;
 
-  sendGoldGiftPacket(options: {
-    peer: number | Peer;
-    amountMilligrams: number | string | bigint;
-    count?: number;
-    message?: string;
-    givingType?: number;
-  }): Promise<{ giftPacketId: bigint }>;
+  /**
+   * Send a gold gift packet in milligrams of gold (پاکت هدیه طلا).
+   */
+  sendGoldGiftPacket(options: SendGoldGiftPacketOptions): Promise<GoldGiftPacketResult>;
 
-  sendGoldPacket(options: {
-    peerId: number | Peer;
-    goldMilligrams: number | string | bigint;
-    message?: string;
-    packetType?: number;
-  }): Promise<{ giftPacketId: bigint }>;
+  /**
+   * Send a gold gift packet using peer ID.
+   */
+  sendGoldPacket(options: SendGoldPacketOptions): Promise<GoldGiftPacketResult>;
 
+  /**
+   * Open a gold gift packet.
+   */
   openGoldGiftPacket(giftPacketId: number | string | bigint): Promise<OpenGoldGiftPacketResponse>;
+
+  /**
+   * Claim gold share from a gold gift packet.
+   */
   claimGoldGiftPacket(giftPacketId: number | string | bigint): Promise<OpenGoldGiftPacketResponse>;
-  getGoldGiftPacket(giftPacketId: number | string | bigint): Promise<GetWinnerIDsResponse>;
+
+  /**
+   * Get winner IDs of a gold gift packet.
+   */
   getGoldGiftPacketWinners(giftPacketId: number | string | bigint): Promise<GetWinnerIDsResponse>;
+
+  /**
+   * Alias for getGoldGiftPacketWinners.
+   */
+  getGoldGiftPacket(giftPacketId: number | string | bigint): Promise<GetWinnerIDsResponse>;
+
+  /**
+   * Alias for getGoldGiftPacketWinners.
+   */
   getGoldWinners(giftPacketId: number | string | bigint): Promise<GetWinnerIDsResponse>;
 
   // ==========================================
   // Mini Apps / WebApps API
   // ==========================================
 
+  /**
+   * Get launching URL and query ID for a Mini App.
+   */
   getMiniAppUrl(options: {
     botUserId: number | string;
     screenMode?: ScreenMode | number;
@@ -930,8 +1781,14 @@ export class BaleClient extends EventEmitter {
     themeParams?: ThemeParams;
   }): Promise<{ url: string; screenMode: number; queryId: string }>;
 
+  /**
+   * Get authentication hash for web app launch.
+   */
   getWebappHash(botUserId: number | string, data?: string): Promise<{ hash: string; authDate: number; queryId: string }>;
 
+  /**
+   * Generate full Mini App launching parameters and signed initData.
+   */
   createMiniAppParams(
     botUserId: number | string,
     options?: {
@@ -951,12 +1808,38 @@ export class BaleClient extends EventEmitter {
     launchUrl: string;
   }>;
 
+  /**
+   * Create an initData raw query string.
+   */
   createInitData(options?: MiniAppInitDataOptions): string;
+
+  /**
+   * Sign initData with HMAC-SHA256 using bot token.
+   */
   signInitData(data: Record<string, any> | string, botToken: string): string;
-  validateInitData(initData: string, botToken: string, maxAgeSeconds?: number): { valid: boolean; data?: MiniAppParsedInitData; error?: string };
+
+  /**
+   * Validate initData signature and check expiry.
+   */
+  validateInitData(
+    initData: string,
+    botToken: string,
+    maxAgeSeconds?: number
+  ): { valid: boolean; data?: MiniAppParsedInitData; error?: string };
+
+  /**
+   * Parse an initData string into structured object.
+   */
   parseInitData(initData: string): MiniAppParsedInitData;
+
+  /**
+   * Build complete launch URL with hash fragments.
+   */
   buildMiniAppUrl(options?: MiniAppBuildUrlOptions): string;
 
+  /**
+   * Send data back from a Mini App to the bot.
+   */
   sendMiniAppData(options: {
     botUserId: number | string;
     queryId?: string;
@@ -964,7 +1847,14 @@ export class BaleClient extends EventEmitter {
     buttonText?: string;
   }): Promise<any>;
 
+  /**
+   * Get bot menu button configuration.
+   */
   getBotMenuButton(botUserId: number | string): Promise<{ menuButton: any }>;
+
+  /**
+   * Invoke custom method on Mini App bridge.
+   */
   invokeMiniAppCustomMethod(options: {
     botUserId: number | string;
     method: string;
@@ -975,43 +1865,98 @@ export class BaleClient extends EventEmitter {
   // Stories API
   // ==========================================
 
-  sendStory(options?: any): Promise<any>;
+  /**
+   * Post a new story.
+   */
+  sendStory(options?: SendStoryOptions): Promise<StoryItem>;
+
+  /**
+   * Delete an active story.
+   */
   deleteStory(storyId: number | string | bigint): Promise<any>;
-  getUserStories(userId: number | string): Promise<any[]>;
+
+  /**
+   * Get user stories.
+   */
+  getUserStories(userId: number | string): Promise<StoryItem[]>;
+
+  /**
+   * React / like a story.
+   */
   likeStory(storyId: number | string | bigint): Promise<any>;
-  getStoryViewers(storyId: number | string | bigint): Promise<any[]>;
+
+  /**
+   * Fetch viewers list for a story.
+   */
+  getStoryViewers(storyId: number | string | bigint): Promise<StoryViewer[]>;
 
   // ==========================================
   // Scheduled Messages
   // ==========================================
 
-  scheduleMessage(peer: number | Peer, text: string, sendDate: number | Date): Promise<any>;
-  loadScheduledMessages(peer: number | Peer): Promise<any[]>;
+  /**
+   * Schedule a message to be delivered at a future timestamp.
+   */
+  scheduleMessage(peer: number | Peer, text: string, sendDate: number | Date): Promise<ScheduledMessage>;
+
+  /**
+   * Load list of pending scheduled messages for a dialog.
+   */
+  loadScheduledMessages(peer: number | Peer): Promise<ScheduledMessage[]>;
+
+  /**
+   * Cancel / delete a scheduled message.
+   */
   deleteScheduledMessage(peer: number | Peer, messageId: string | number): Promise<any>;
 
   // ==========================================
   // AI & TLDR
   // ==========================================
 
+  /**
+   * Generate an AI summary for a webpage link.
+   */
   summarizeLink(url: string): Promise<{ summary: string }>;
+
+  /**
+   * Ask Bale AI assistant a question.
+   */
   askAI(prompt: string, context?: any): Promise<{ answer: string }>;
 
   // ==========================================
   // Humanize & Anti-Ban Controls
   // ==========================================
 
+  /**
+   * Configure stealth and humanization behavior.
+   */
   setHumanize(value: boolean | HumanizeConfig): boolean;
+
+  /**
+   * Enable humanized timing and auto-mark-as-read.
+   */
   enableHumanize(config?: HumanizeConfig): boolean;
+
+  /**
+   * Disable humanized delays (instant bot response mode).
+   */
   disableHumanize(): boolean;
 
+  /**
+   * Low-level Protobuf RPC dispatcher.
+   */
   invoke(serviceName: string, methodName: string, payload?: Buffer | Uint8Array | object, metadata?: any): Promise<any>;
 
   // ==========================================
   // Utilities & Internal Methods
   // ==========================================
 
+  /**
+   * Sleep helper utility.
+   */
   sleep(ms: number): Promise<void>;
-  _sendDocumentMessage?(peer: number | Peer, file: any, options?: any): Promise<any>;
+
+  _sendDocumentMessage?(peer: number | Peer, file: any, options?: any): Promise<Buffer>;
   _startOnlineHeartbeat?(): void;
   _stopOnlineHeartbeat?(): void;
   _handleUpdate?(update: any): Promise<void>;
@@ -1027,10 +1972,10 @@ export class BaleClient extends EventEmitter {
   on(event: 'giftPacketOpened', listener: (evt: GiftPacketOpenedEvent) => void): this;
   on(event: 'miniAppData', listener: (evt: MiniAppDataEvent) => void): this;
   on(event: 'serviceMessage', listener: (evt: ServiceMessageEvent) => void): this;
-  on(event: 'groupCreated', listener: (evt: any) => void): this;
-  on(event: 'userInvited', listener: (evt: any) => void): this;
-  on(event: 'userKicked', listener: (evt: any) => void): this;
-  on(event: 'userLeft', listener: (evt: any) => void): this;
+  on(event: 'groupCreated', listener: (evt: GroupCreatedEvent) => void): this;
+  on(event: 'userInvited', listener: (evt: UserInvitedEvent) => void): this;
+  on(event: 'userKicked', listener: (evt: UserKickedEvent) => void): this;
+  on(event: 'userLeft', listener: (evt: UserLeftEvent) => void): this;
 
   on(event: 'messageEdit', listener: (data: MessageEditUpdate) => void): this;
   on(event: 'messageDelete', listener: (data: MessageDeleteUpdate) => void): this;
@@ -1122,7 +2067,7 @@ export class BaleClient extends EventEmitter {
   on(event: 'peersInvited', listener: (data: CallUpdate) => void): this;
   on(event: 'multiPeerCallStarted', listener: (data: CallUpdate) => void): this;
   on(event: 'peersStateChanged', listener: (data: CallUpdate) => void): this;
-  on(event: 'botCallbackQuery', listener: (data: any) => void): this;
+  on(event: 'botCallbackQuery', listener: (data: BotCallbackQueryEvent) => void): this;
   on(event: 'call', listener: (data: CallUpdate) => void): this;
 
   on(event: 'connected', listener: (info: ConnectedInfo) => void): this;
@@ -1188,15 +2133,23 @@ export const servicesCatalog: {
       responseSchema: any;
     }>;
   }>;
+};
+
 // ==========================================
 // Official Bale HTTP Bot API (https://docs.bale.ai/)
 // ==========================================
 
+/**
+ * Configuration options for official HTTP bot client.
+ */
 export interface BaleBotOptions {
   baseUrl?: string;
   timeout?: number;
 }
 
+/**
+ * Bale Bot API User object.
+ */
 export interface BotUser {
   id: number;
   is_bot: boolean;
@@ -1206,6 +2159,9 @@ export interface BotUser {
   language_code?: string;
 }
 
+/**
+ * Bale Bot API Chat object.
+ */
 export interface BotChat {
   id: number;
   type: 'private' | 'group' | 'channel';
@@ -1215,6 +2171,187 @@ export interface BotChat {
   last_name?: string;
 }
 
+/**
+ * Photo size variation in Bot API.
+ */
+export interface BotPhotoSize {
+  file_id: string;
+  file_unique_id?: string;
+  width: number;
+  height: number;
+  file_size?: number;
+}
+
+/**
+ * Audio file attachment in Bot API.
+ */
+export interface BotAudio {
+  file_id: string;
+  file_unique_id?: string;
+  duration: number;
+  performer?: string;
+  title?: string;
+  mime_type?: string;
+  file_size?: number;
+}
+
+/**
+ * Document file attachment in Bot API.
+ */
+export interface BotDocument {
+  file_id: string;
+  file_unique_id?: string;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+}
+
+/**
+ * Video file attachment in Bot API.
+ */
+export interface BotVideo {
+  file_id: string;
+  file_unique_id?: string;
+  width: number;
+  height: number;
+  duration: number;
+  mime_type?: string;
+  file_size?: number;
+}
+
+/**
+ * Voice note file attachment in Bot API.
+ */
+export interface BotVoice {
+  file_id: string;
+  file_unique_id?: string;
+  duration: number;
+  mime_type?: string;
+  file_size?: number;
+}
+
+/**
+ * Animation / GIF attachment in Bot API.
+ */
+export interface BotAnimation {
+  file_id: string;
+  file_unique_id?: string;
+  width: number;
+  height: number;
+  duration: number;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+}
+
+/**
+ * Shared phone contact in Bot API.
+ */
+export interface BotContact {
+  phone_number: string;
+  first_name: string;
+  last_name?: string;
+  user_id?: number;
+}
+
+/**
+ * Shared location point in Bot API.
+ */
+export interface BotLocation {
+  latitude: number;
+  longitude: number;
+}
+
+/**
+ * File information returned by getFile.
+ */
+export interface BotFile {
+  file_id: string;
+  file_unique_id?: string;
+  file_size?: number;
+  file_path?: string;
+}
+
+/**
+ * Chat permissions configuration.
+ */
+export interface BotChatPermissions {
+  can_send_messages?: boolean;
+  can_send_media_messages?: boolean;
+  can_send_polls?: boolean;
+  can_send_other_messages?: boolean;
+  can_add_web_page_previews?: boolean;
+  can_change_info?: boolean;
+  can_invite_users?: boolean;
+  can_pin_messages?: boolean;
+}
+
+/**
+ * Chat photo file IDs.
+ */
+export interface BotChatPhoto {
+  small_file_id: string;
+  big_file_id: string;
+}
+
+/**
+ * Detailed chat info returned by getChat.
+ */
+export interface BotChatFullInfo {
+  id: number;
+  type: 'private' | 'group' | 'channel';
+  title?: string;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  description?: string;
+  invite_link?: string;
+  pinned_message?: BotMessage;
+  permissions?: BotChatPermissions;
+  photo?: BotChatPhoto;
+  member_count?: number;
+  [key: string]: any;
+}
+
+/**
+ * Chat member status and permission details.
+ */
+export interface BotChatMember {
+  user: BotUser;
+  status: 'creator' | 'administrator' | 'member' | 'restricted' | 'left' | 'kicked';
+  until_date?: number;
+  can_be_edited?: boolean;
+  can_manage_chat?: boolean;
+  can_change_info?: boolean;
+  can_post_messages?: boolean;
+  can_edit_messages?: boolean;
+  can_delete_messages?: boolean;
+  can_invite_users?: boolean;
+  can_restrict_members?: boolean;
+  can_pin_messages?: boolean;
+  can_promote_members?: boolean;
+  [key: string]: any;
+}
+
+/**
+ * Chat invite link details.
+ */
+export interface BotChatInviteLink {
+  invite_link: string;
+  creator: BotUser;
+  creates_join_request: boolean;
+  is_primary: boolean;
+  is_revoked: boolean;
+  name?: string;
+  expire_date?: number;
+  member_limit?: number;
+  pending_join_request_count?: number;
+  [key: string]: any;
+}
+
+/**
+ * Invoice details in a message.
+ */
 export interface BotInvoice {
   title: string;
   description: string;
@@ -1223,12 +2360,270 @@ export interface BotInvoice {
   total_amount: number;
 }
 
+/**
+ * Successful payment information.
+ */
 export interface BotSuccessfulPayment {
   currency: string;
   total_amount: number;
   invoice_payload: string;
 }
 
+/**
+ * Price item in invoice creation.
+ */
+export interface BotLabeledPrice {
+  label: string;
+  amount: number;
+}
+
+/**
+ * Financial transaction record from inquireTransaction.
+ */
+export interface BotTransaction {
+  transaction_id: string;
+  status: string;
+  amount: number;
+  currency?: string;
+  payer_id?: number;
+  creation_date?: number;
+  [key: string]: any;
+}
+
+/**
+ * Webhook status information from getWebhookInfo.
+ */
+export interface BotWebhookInfo {
+  url: string;
+  has_custom_certificate?: boolean;
+  pending_update_count?: number;
+  last_error_date?: number;
+  last_error_message?: string;
+  max_connections?: number;
+  allowed_updates?: string[];
+  [key: string]: any;
+}
+
+// Media input for sendMediaGroup
+export interface BotInputMediaPhoto {
+  type: 'photo';
+  media: string | Buffer | NodeJS.ReadableStream;
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+}
+
+export interface BotInputMediaVideo {
+  type: 'video';
+  media: string | Buffer | NodeJS.ReadableStream;
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  width?: number;
+  height?: number;
+  duration?: number;
+}
+
+export interface BotInputMediaAudio {
+  type: 'audio';
+  media: string | Buffer | NodeJS.ReadableStream;
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  duration?: number;
+  performer?: string;
+  title?: string;
+}
+
+export interface BotInputMediaDocument {
+  type: 'document';
+  media: string | Buffer | NodeJS.ReadableStream;
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+}
+
+export type BotInputMedia =
+  | BotInputMediaPhoto
+  | BotInputMediaVideo
+  | BotInputMediaAudio
+  | BotInputMediaDocument;
+
+// Keyboard structures
+export interface BotInlineKeyboardButton {
+  text: string;
+  url?: string;
+  callback_data?: string;
+  web_app?: { url: string };
+  copy_text?: { text: string };
+  [key: string]: any;
+}
+
+export interface BotInlineKeyboardMarkup {
+  inline_keyboard: BotInlineKeyboardButton[][];
+}
+
+export interface BotKeyboardButton {
+  text: string;
+  request_contact?: boolean;
+  request_location?: boolean;
+  [key: string]: any;
+}
+
+export interface BotReplyKeyboardMarkup {
+  keyboard: BotKeyboardButton[][];
+  resize_keyboard?: boolean;
+  one_time_keyboard?: boolean;
+  [key: string]: any;
+}
+
+export interface BotReplyKeyboardRemove {
+  remove_keyboard: true;
+  [key: string]: any;
+}
+
+export type BotMessageReplyMarkup =
+  | BotInlineKeyboardMarkup
+  | BotReplyKeyboardMarkup
+  | BotReplyKeyboardRemove
+  | InlineKeyboard
+  | ReplyKeyboard
+  | typeof KeyboardRemove;
+
+// Bot method options
+export interface BotSendMessageOptions {
+  parse_mode?: 'Markdown' | 'HTML' | 'MarkdownV2';
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  disable_web_page_preview?: boolean;
+  disable_notification?: boolean;
+  [key: string]: any;
+}
+
+export interface BotCopyMessageOptions {
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendPhotoOptions {
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendAudioOptions {
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  duration?: number;
+  performer?: string;
+  title?: string;
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendDocumentOptions {
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendVideoOptions {
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  duration?: number;
+  width?: number;
+  height?: number;
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendAnimationOptions {
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  duration?: number;
+  width?: number;
+  height?: number;
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendVoiceOptions {
+  caption?: string;
+  parse_mode?: 'Markdown' | 'HTML';
+  duration?: number;
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendLocationOptions {
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendContactOptions {
+  last_name?: string;
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotSendInvoiceOptions {
+  need_name?: boolean;
+  need_phone_number?: boolean;
+  need_email?: boolean;
+  need_shipping_address?: boolean;
+  send_phone_number_to_provider?: boolean;
+  send_email_to_provider?: boolean;
+  is_flexible?: boolean;
+  reply_to_message_id?: number;
+  reply_markup?: BotMessageReplyMarkup;
+  [key: string]: any;
+}
+
+export interface BotEditMessageTextOptions {
+  parse_mode?: 'Markdown' | 'HTML';
+  disable_web_page_preview?: boolean;
+  reply_markup?: BotInlineKeyboardMarkup | InlineKeyboard;
+  [key: string]: any;
+}
+
+export interface BotEditMessageCaptionOptions {
+  parse_mode?: 'Markdown' | 'HTML';
+  reply_markup?: BotInlineKeyboardMarkup | InlineKeyboard;
+  [key: string]: any;
+}
+
+export interface BotPromoteChatMemberOptions {
+  can_change_info?: boolean;
+  can_post_messages?: boolean;
+  can_edit_messages?: boolean;
+  can_delete_messages?: boolean;
+  can_invite_users?: boolean;
+  can_restrict_members?: boolean;
+  can_pin_messages?: boolean;
+  can_promote_members?: boolean;
+  [key: string]: any;
+}
+
+export interface BotCreateChatInviteLinkOptions {
+  name?: string;
+  expire_date?: number;
+  member_limit?: number;
+  creates_join_request?: boolean;
+  [key: string]: any;
+}
+
+/**
+ * Bale Bot API Message representation.
+ */
 export interface BotMessage {
   message_id: number;
   from?: BotUser;
@@ -1237,17 +2632,18 @@ export interface BotMessage {
   text?: string;
   caption?: string;
   reply_to_message?: BotMessage;
-  photo?: any[];
-  audio?: any;
-  document?: any;
-  video?: any;
-  voice?: any;
-  animation?: any;
-  contact?: any;
-  location?: any;
+  photo?: BotPhotoSize[];
+  audio?: BotAudio;
+  document?: BotDocument;
+  video?: BotVideo;
+  voice?: BotVoice;
+  animation?: BotAnimation;
+  contact?: BotContact;
+  location?: BotLocation;
   invoice?: BotInvoice;
   successful_payment?: BotSuccessfulPayment;
   web_app_data?: { data: string; button_text: string };
+  reply_markup?: BotInlineKeyboardMarkup;
   [key: string]: any;
 }
 
@@ -1268,21 +2664,6 @@ export interface BotPreCheckoutQuery {
   invoice_payload: string;
 }
 
-export interface BotTransaction {
-  transaction_id: string;
-  status: string;
-  amount: number;
-  currency?: string;
-  payer_id?: number;
-  creation_date?: number;
-  [key: string]: any;
-}
-
-export interface BotLabeledPrice {
-  label: string;
-  amount: number;
-}
-
 export interface BotUpdate {
   update_id: number;
   message?: BotMessage;
@@ -1291,6 +2672,9 @@ export interface BotUpdate {
   pre_checkout_query?: BotPreCheckoutQuery;
 }
 
+/**
+ * Fluent builder for inline keyboards in Bot API.
+ */
 export class InlineKeyboard {
   inline_keyboard: Array<Array<{
     text: string;
@@ -1308,6 +2692,9 @@ export class InlineKeyboard {
   toJSON(): { inline_keyboard: any[][] };
 }
 
+/**
+ * Fluent builder for reply keyboards in Bot API.
+ */
 export class ReplyKeyboard {
   keyboard: any[][];
   resize_keyboard: boolean;
@@ -1322,10 +2709,17 @@ export class ReplyKeyboard {
   toJSON(): { keyboard: any[][]; resize_keyboard: boolean; one_time_keyboard: boolean };
 }
 
+/**
+ * Helper object to remove custom reply keyboard.
+ */
 export const KeyboardRemove: {
   remove_keyboard: true;
 };
 
+/**
+ * Official Bale HTTP Bot API Client (https://docs.bale.ai/)
+ * Supports all 62 bot methods, webhooks, long-polling, inline buttons, file transfers, and Shetab payments.
+ */
 export class BaleBot extends EventEmitter {
   token: string;
   baseUrl: string;
@@ -1333,81 +2727,299 @@ export class BaleBot extends EventEmitter {
 
   constructor(token: string, options?: BaleBotOptions);
 
+  /**
+   * Get full endpoint URL for a given Bot API method.
+   */
   getMethodUrl(method: string): string;
-  getFileUrl(filePath: string): string;
-  call(method: string, params?: any, files?: any): Promise<any>;
 
+  /**
+   * Get public download URL for a file stored on Bale CDN.
+   */
+  getFileUrl(filePath: string): string;
+
+  /**
+   * Execute raw HTTP request against Bot API.
+   */
+  call(method: string, params?: Record<string, any>, files?: Record<string, any>): Promise<any>;
+
+  /**
+   * Get basic bot account information.
+   */
   getMe(): Promise<BotUser>;
+
+  /**
+   * Log out of the cloud Bot API server.
+   */
   logout(): Promise<boolean>;
+
+  /**
+   * Close the bot instance before exiting.
+   */
   close(): Promise<boolean>;
 
+  /**
+   * Receive incoming updates via long polling.
+   */
   getUpdates(options?: { offset?: number; limit?: number; timeout?: number }): Promise<BotUpdate[]>;
-  setWebhook(urlOrOptions: string | { url: string; [key: string]: any }): Promise<boolean>;
-  deleteWebhook(): Promise<boolean>;
-  getWebhookInfo(): Promise<{ url: string; [key: string]: any }>;
 
+  /**
+   * Register a webhook endpoint to receive updates via HTTPS POST.
+   */
+  setWebhook(urlOrOptions: string | { url: string; certificate?: any; max_connections?: number; allowed_updates?: string[]; drop_pending_updates?: boolean; secret_token?: string; [key: string]: any }): Promise<boolean>;
+
+  /**
+   * Remove webhook integration and switch back to getUpdates.
+   */
+  deleteWebhook(options?: { drop_pending_updates?: boolean }): Promise<boolean>;
+
+  /**
+   * Get current webhook status.
+   */
+  getWebhookInfo(): Promise<BotWebhookInfo>;
+
+  /**
+   * Start automatic long-polling loop with event emissions.
+   */
   startPolling(options?: { interval?: number; limit?: number; timeout?: number }): void;
+
+  /**
+   * Stop background long-polling loop.
+   */
   stopPolling(): void;
+
+  /**
+   * Feed an incoming update to the bot dispatcher.
+   */
   handleUpdate(update: BotUpdate): void;
+
+  /**
+   * Create Express / Node.js HTTP webhook handler middleware.
+   */
   createWebhookMiddleware(options?: { secretToken?: string }): (req: any, res: any) => void;
 
-  sendMessage(chatId: number | string, text: string, options?: {
-    parse_mode?: 'Markdown' | 'HTML';
-    reply_to_message_id?: number;
-    reply_markup?: any;
-    [key: string]: any;
-  }): Promise<BotMessage>;
+  /**
+   * Send a text message to a chat.
+   */
+  sendMessage(chatId: number | string, text: string, options?: BotSendMessageOptions): Promise<BotMessage>;
 
+  /**
+   * Forward a message of any kind to another chat.
+   */
   forwardMessage(chatId: number | string, fromChatId: number | string, messageId: number): Promise<BotMessage>;
-  copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: any): Promise<{ message_id: number }>;
 
-  sendPhoto(chatId: number | string, photo: string | Buffer | any, options?: any): Promise<BotMessage>;
-  sendAudio(chatId: number | string, audio: string | Buffer | any, options?: any): Promise<BotMessage>;
-  sendDocument(chatId: number | string, document: string | Buffer | any, options?: any): Promise<BotMessage>;
-  sendVideo(chatId: number | string, video: string | Buffer | any, options?: any): Promise<BotMessage>;
-  sendAnimation(chatId: number | string, animation: string | Buffer | any, options?: any): Promise<BotMessage>;
-  sendVoice(chatId: number | string, voice: string | Buffer | any, options?: any): Promise<BotMessage>;
-  sendMediaGroup(chatId: number | string, media: any[]): Promise<BotMessage[]>;
-  sendLocation(chatId: number | string, latitude: number, longitude: number, options?: any): Promise<BotMessage>;
-  sendContact(chatId: number | string, phoneNumber: string, firstName: string, options?: any): Promise<BotMessage>;
-  sendChatAction(chatId: number | string, action?: string): Promise<boolean>;
+  /**
+   * Copy a message without link to original author.
+   */
+  copyMessage(chatId: number | string, fromChatId: number | string, messageId: number, options?: BotCopyMessageOptions): Promise<{ message_id: number }>;
 
-  getFile(fileId: string): Promise<{ file_id: string; file_size?: number; file_path?: string }>;
+  /**
+   * Send a photo to a chat.
+   */
+  sendPhoto(chatId: number | string, photo: string | Buffer | any, options?: BotSendPhotoOptions): Promise<BotMessage>;
+
+  /**
+   * Send an audio / MP3 music file to a chat.
+   */
+  sendAudio(chatId: number | string, audio: string | Buffer | any, options?: BotSendAudioOptions): Promise<BotMessage>;
+
+  /**
+   * Send a general file / document to a chat.
+   */
+  sendDocument(chatId: number | string, document: string | Buffer | any, options?: BotSendDocumentOptions): Promise<BotMessage>;
+
+  /**
+   * Send a video file to a chat.
+   */
+  sendVideo(chatId: number | string, video: string | Buffer | any, options?: BotSendVideoOptions): Promise<BotMessage>;
+
+  /**
+   * Send an animation / GIF to a chat.
+   */
+  sendAnimation(chatId: number | string, animation: string | Buffer | any, options?: BotSendAnimationOptions): Promise<BotMessage>;
+
+  /**
+   * Send a voice note (.ogg) to a chat.
+   */
+  sendVoice(chatId: number | string, voice: string | Buffer | any, options?: BotSendVoiceOptions): Promise<BotMessage>;
+
+  /**
+   * Send an album / carousel of media items.
+   */
+  sendMediaGroup(chatId: number | string, media: BotInputMedia[]): Promise<BotMessage[]>;
+
+  /**
+   * Send a geographical coordinate point.
+   */
+  sendLocation(chatId: number | string, latitude: number, longitude: number, options?: BotSendLocationOptions): Promise<BotMessage>;
+
+  /**
+   * Send a phone contact card.
+   */
+  sendContact(chatId: number | string, phoneNumber: string, firstName: string, options?: BotSendContactOptions): Promise<BotMessage>;
+
+  /**
+   * Broadcast a chat action indicator (typing, uploading photo, etc.).
+   */
+  sendChatAction(chatId: number | string, action?: 'typing' | 'upload_photo' | 'record_video' | 'upload_video' | 'record_voice' | 'upload_voice' | 'upload_document' | 'find_location' | 'record_video_note' | 'upload_video_note' | string): Promise<boolean>;
+
+  /**
+   * Get file metadata and download path from file_id.
+   */
+  getFile(fileId: string): Promise<BotFile>;
+
+  /**
+   * Download a file from Bale servers to disk or buffer.
+   */
   downloadFile(filePathOrFileId: string, destinationPath?: string): Promise<Buffer | string>;
 
-  answerCallbackQuery(callbackQueryId: string, options?: { text?: string; show_alert?: boolean; url?: string }): Promise<boolean>;
+  /**
+   * Answer a callback query from an inline keyboard button.
+   */
+  answerCallbackQuery(callbackQueryId: string, options?: { text?: string; show_alert?: boolean; url?: string; cache_time?: number }): Promise<boolean>;
+
+  /**
+   * Prompt user to rate / review the bot.
+   */
   askReview(chatId: number | string): Promise<boolean>;
 
-  editMessageText(chatId: number | string, messageId: number, text: string, options?: any): Promise<BotMessage>;
-  editMessageCaption(chatId: number | string, messageId: number, caption: string, options?: any): Promise<BotMessage>;
-  editMessageReplyMarkup(chatId: number | string, messageId: number, replyMarkup: any): Promise<BotMessage>;
+  /**
+   * Edit text of a previously sent message.
+   */
+  editMessageText(chatId: number | string, messageId: number, text: string, options?: BotEditMessageTextOptions): Promise<BotMessage>;
+
+  /**
+   * Edit caption of a media message.
+   */
+  editMessageCaption(chatId: number | string, messageId: number, caption: string, options?: BotEditMessageCaptionOptions): Promise<BotMessage>;
+
+  /**
+   * Edit inline reply markup of a message.
+   */
+  editMessageReplyMarkup(chatId: number | string, messageId: number, replyMarkup?: BotMessageReplyMarkup): Promise<BotMessage>;
+
+  /**
+   * Delete a message.
+   */
   deleteMessage(chatId: number | string, messageId: number): Promise<boolean>;
+
+  /**
+   * Delete multiple messages in a chat.
+   */
   deleteMessages(chatId: number | string, messageIds: number[]): Promise<boolean>;
 
+  /**
+   * Ban a user from a chat group or channel.
+   */
   banChatMember(chatId: number | string, userId: number): Promise<boolean>;
+
+  /**
+   * Unban a previously banned user.
+   */
   unbanChatMember(chatId: number | string, userId: number): Promise<boolean>;
-  promoteChatMember(chatId: number | string, userId: number, options?: any): Promise<boolean>;
+
+  /**
+   * Promote or demote a chat member to administrator.
+   */
+  promoteChatMember(chatId: number | string, userId: number, options?: BotPromoteChatMemberOptions): Promise<boolean>;
+
+  /**
+   * Set new chat profile photo.
+   */
   setChatPhoto(chatId: number | string, photo: string | Buffer | any): Promise<boolean>;
+
+  /**
+   * Delete chat profile photo.
+   */
   deleteChatPhoto(chatId: number | string): Promise<boolean>;
+
+  /**
+   * Change chat title.
+   */
   setChatTitle(chatId: number | string, title: string): Promise<boolean>;
+
+  /**
+   * Change chat description.
+   */
   setChatDescription(chatId: number | string, description: string): Promise<boolean>;
+
+  /**
+   * Pin a message in a chat.
+   */
   pinChatMessage(chatId: number | string, messageId: number): Promise<boolean>;
+
+  /**
+   * Unpin a pinned chat message.
+   */
   unpinChatMessage(chatId: number | string, messageId?: number): Promise<boolean>;
+
+  /**
+   * Alias for unpinChatMessage (docs.bale.ai compatibility).
+   */
   unPinChatMessage(chatId: number | string, messageId?: number): Promise<boolean>;
+
+  /**
+   * Clear all pinned messages in a chat.
+   */
   unpinAllChatMessages(chatId: number | string): Promise<boolean>;
+
+  /**
+   * Leave a group or channel.
+   */
   leaveChat(chatId: number | string): Promise<boolean>;
-  getChat(chatId: number | string): Promise<any>;
-  getChatAdministrators(chatId: number | string): Promise<any[]>;
+
+  /**
+   * Get detailed information about a chat.
+   */
+  getChat(chatId: number | string): Promise<BotChatFullInfo>;
+
+  /**
+   * Get list of administrators in a chat.
+   */
+  getChatAdministrators(chatId: number | string): Promise<BotChatMember[]>;
+
+  /**
+   * Get number of members in a chat.
+   */
   getChatMembersCount(chatId: number | string): Promise<number>;
-  getChatMember(chatId: number | string, userId: number): Promise<any>;
-  createChatInviteLink(chatId: number | string): Promise<any>;
-  revokeChatInviteLink(chatId: number | string, inviteLink: string): Promise<any>;
+
+  /**
+   * Get information about a specific member of a chat.
+   */
+  getChatMember(chatId: number | string, userId: number): Promise<BotChatMember>;
+
+  /**
+   * Create an additional invite link for a chat.
+   */
+  createChatInviteLink(chatId: number | string, options?: BotCreateChatInviteLinkOptions): Promise<BotChatInviteLink>;
+
+  /**
+   * Revoke an invite link previously generated by the bot.
+   */
+  revokeChatInviteLink(chatId: number | string, inviteLink: string): Promise<BotChatInviteLink>;
+
+  /**
+   * Generate a primary invite link for a chat.
+   */
   exportChatInviteLink(chatId: number | string): Promise<string>;
 
-  uploadStickerFile(userId: number, pngSticker: string | Buffer | any): Promise<any>;
+  /**
+   * Upload a PNG sticker file for later use in sticker sets.
+   */
+  uploadStickerFile(userId: number, pngSticker: string | Buffer | any): Promise<BotFile>;
+
+  /**
+   * Create a new sticker set owned by a user.
+   */
   createNewStickerSet(userId: number, name: string, title: string, pngSticker: string | Buffer | any, emojis: string): Promise<boolean>;
+
+  /**
+   * Add a new sticker to an existing sticker set.
+   */
   addStickerToSet(userId: number, name: string, pngSticker: string | Buffer | any, emojis: string): Promise<boolean>;
 
+  /**
+   * Send an invoice for payment through Shetab banking.
+   */
   sendInvoice(
     chatId: number | string,
     title: string,
@@ -1416,8 +3028,12 @@ export class BaleBot extends EventEmitter {
     providerToken: string,
     currency: string,
     prices: BotLabeledPrice[],
-    options?: any
+    options?: BotSendInvoiceOptions
   ): Promise<BotMessage>;
+
+  /**
+   * Create a shareable direct payment link for an invoice.
+   */
   createInvoiceLink(
     title: string,
     description: string,
@@ -1425,9 +3041,17 @@ export class BaleBot extends EventEmitter {
     providerToken: string,
     currency: string,
     prices: BotLabeledPrice[],
-    options?: any
+    options?: BotSendInvoiceOptions
   ): Promise<string>;
+
+  /**
+   * Respond to pre-checkout verification queries.
+   */
   answerPreCheckoutQuery(preCheckoutQueryId: string, ok?: boolean, errorMessage?: string): Promise<boolean>;
+
+  /**
+   * Inquire payment status for a Shetab transaction ID.
+   */
   inquireTransaction(transactionId: string): Promise<BotTransaction>;
 
   on(event: 'message', listener: (msg: BotMessage) => void): this;
@@ -1442,10 +3066,13 @@ export class BaleBot extends EventEmitter {
   emit(event: string, ...args: any[]): boolean;
 }
 
+// ==========================================
+// CLI & IPC Bridge Functions
+// ==========================================
+
 export function startStdioMode(): void;
 export function startHttpMode(port?: number): void;
 export function handleCommand(req: any): Promise<any>;
 export function executeMethod(method: string, params?: any): Promise<any>;
 
 export default BaleClient;
-
