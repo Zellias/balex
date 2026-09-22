@@ -1382,6 +1382,7 @@ export class BaleBot extends EventEmitter {
   editMessageCaption(chatId: number | string, messageId: number, caption: string, options?: any): Promise<BotMessage>;
   editMessageReplyMarkup(chatId: number | string, messageId: number, replyMarkup: any): Promise<BotMessage>;
   deleteMessage(chatId: number | string, messageId: number): Promise<boolean>;
+  deleteMessages(chatId: number | string, messageIds: number[]): Promise<boolean>;
 
   banChatMember(chatId: number | string, userId: number): Promise<boolean>;
   unbanChatMember(chatId: number | string, userId: number): Promise<boolean>;
@@ -1392,6 +1393,7 @@ export class BaleBot extends EventEmitter {
   setChatDescription(chatId: number | string, description: string): Promise<boolean>;
   pinChatMessage(chatId: number | string, messageId: number): Promise<boolean>;
   unpinChatMessage(chatId: number | string, messageId?: number): Promise<boolean>;
+  unPinChatMessage(chatId: number | string, messageId?: number): Promise<boolean>;
   unpinAllChatMessages(chatId: number | string): Promise<boolean>;
   leaveChat(chatId: number | string): Promise<boolean>;
   getChat(chatId: number | string): Promise<any>;

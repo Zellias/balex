@@ -6,6 +6,7 @@
 
 const https = require("https");
 const http = require("http");
+const fs = require("fs");
 const { URL } = require("url");
 const { EventEmitter } = require("events");
 
@@ -727,6 +728,19 @@ class BaleBot extends EventEmitter {
     });
   }
 
+  /**
+   * Delete multiple messages simultaneously.
+   * @param {number|string} chatId
+   * @param {number[]} messageIds
+   * @returns {Promise<boolean>}
+   */
+  async deleteMessages(chatId, messageIds) {
+    return this.call("deleteMessages", {
+      chat_id: chatId,
+      message_ids: Array.isArray(messageIds) ? messageIds : [messageIds]
+    });
+  }
+
   // ==========================================
   // Chat Administration (Groups & Channels)
   // ==========================================
@@ -826,6 +840,13 @@ class BaleBot extends EventEmitter {
    */
   async unpinChatMessage(chatId, messageId = undefined) {
     return this.call("unpinChatMessage", { chat_id: chatId, message_id: messageId });
+  }
+
+  /**
+   * Alias for unpinChatMessage to match docs.bale.ai casing.
+   */
+  async unPinChatMessage(chatId, messageId = undefined) {
+    return this.unpinChatMessage(chatId, messageId);
   }
 
   /**

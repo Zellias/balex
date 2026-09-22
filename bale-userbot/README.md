@@ -2,14 +2,14 @@
 
 # 🚀 BaleX — کتابخانه جامع پروتکل رسمی بله
 
-[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
-[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
-[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20TypeScript%20%7C%20Go-F59E0B.svg?style=for-the-badge)](https://github.com/Zellias/bale-userbot)
+[![Version](https://img.shields.io/badge/version-1.2.0-emerald.svg?style=for-the-badge)](https://github.com/Zellias/balex)
+[![Protocol](https://img.shields.io/badge/protocol-Protobuf%20%7C%20gRPC--Web-5865F2.svg?style=for-the-badge)](https://github.com/Zellias/balex)
+[![Platform](https://img.shields.io/badge/platform-Node.js%20%7C%20TypeScript%20%7C%20Go-F59E0B.svg?style=for-the-badge)](https://github.com/Zellias/balex)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 **پیاده‌سازی مستقل، پرسرعت و خالص پروتکل باینری پیام‌رسان بله و Bot API رسمی، بدون نیاز به مرورگر یا گوشی، همراه با پشتیبانی از سیستم مالی کارت‌به‌کارت، موتور ضد مسدودی و قابلیت اجرای مستقیم از زبان Go (Golang).**
 
-[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://zellias.github.io/bale-userbot/)
+[📖 مشاهده سایت مستندات آنلاین (GitHub Pages)](https://zellias.github.io/balex/)
 
 ---
 
@@ -898,7 +898,7 @@ console.log('لیست برندگان طلا:', winners.winnerIds);
 تولید آفلاین یا آنلاین `initData`، امضای امنیتی هش، و اعتبارسنجی رمزی در سمت بک‌اند ربات:
 
 ```javascript
-const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('bale-userbot');
+const { MiniAppUtils, ScreenMode, MiniAppEvent } = require('balex');
 
 const botToken = '123456789:ABCdefGhIJKlmNoPQRstuVWXyz';
 
@@ -1148,18 +1148,22 @@ const res = await client.invoke('bale.presence.v1.Presence', 'SetOnline', {
 
 ---
 
-## 🤖 بازوهای رسمی بله (Official Bale HTTP Bot API)
+## 🤖 بازوهای رسمی بله (Official Bale HTTP Bot API - docs.bale.ai)
 
-علاوه بر یوزربات و پروتکل باینری، این کتابخانه شامل پشتیبانی ۱۰۰٪ بومی و صفر وابستگی از **API رسمی بازوهای بله ([docs.bale.ai](https://docs.bale.ai/))** است.
+علاوه بر یوزربات و پروتکل باینری، کتابخانه BaleX دارای پشتیبانی ۱۰۰٪ بومی و صفر وابستگی از **API رسمی بازوهای بله ([docs.bale.ai](https://docs.bale.ai/))** است.
 
-### راه‌اندازی سریع با Long Polling
+### راه‌اندازی سریع بازو با Long Polling
 ```javascript
-const { BaleBot, InlineKeyboard, ReplyKeyboard } = require('bale-userbot');
+const { BaleBot, InlineKeyboard, ReplyKeyboard, KeyboardRemove } = require('balex');
 
-// مقداردهی با توکن دریافت شده از botfather@ در بله
+// ۱. مقداردهی با توکن دریافت شده از botfather@ در بله
 const bot = new BaleBot('123456789:abcdIuZmK5qNEm2A1BhUaAg7MPJv1O9KCcBQB2ro');
 
-// دریافت و پاسخ به پیام‌ها
+// ۲. دریافت مشخصات ربات
+const me = await bot.getMe();
+console.log(`ربات فعال شد: @${me.username}`);
+
+// ۳. دریافت و پاسخ به پیام‌ها
 bot.on('message', async (msg) => {
   if (msg.text === '/start') {
     const kb = new InlineKeyboard()
@@ -1167,7 +1171,7 @@ bot.on('message', async (msg) => {
       .url('وب‌سایت بله', 'https://ble.ir')
       .row()
       .webApp('مینی‌اپ فروشگاه', 'https://app.example.com')
-      .copyText('کپی کد معرف', 'BALE2026');
+      .copyText('کپی کد معرف', 'BALE2026'); // کپی سریع در کلیپ‌بورد کاربر
 
     await bot.sendMessage(msg.chat.id, 'سلام! به بازوی بله خوش آمدید.', {
       reply_markup: kb
@@ -1175,13 +1179,74 @@ bot.on('message', async (msg) => {
   }
 });
 
-// کلیک دکمه‌های اینلاین
+// ۴. کلیک دکمه‌های شیشه‌ای
 bot.on('callback_query', async (query) => {
-  await bot.answerCallbackQuery(query.id, { text: 'عملیات با موفقیت ثبت شد.' });
+  await bot.answerCallbackQuery(query.id, {
+    text: 'عملیات با موفقیت ثبت شد.',
+    show_alert: true
+  });
 });
 
-// شروع دریافت رویدادها
+// ۵. شروع دریافت رویدادها
 bot.startPolling({ interval: 300, timeout: 20 });
+```
+
+### ارسال انواع رسانه‌ها با ۴ روش ورودی فایل (Media Uploads)
+بازوی بله از ۴ روش برای ارسال عکس، صوت، سند، ویدیو، ویس و انیمیشن پشتیبانی می‌کند:
+```javascript
+const fs = require('fs');
+
+// ۱. با شناسه فایل قبلی روی بله (بدون نیاز به آپلود مجدد و مصرف پهنای باند)
+await bot.sendPhoto(chatId, 'file_id_from_bale', { caption: 'عکس آرشیو' });
+
+// ۲. با آدرس URL اینترنتی (دانلود مستقیم توسط سرور بله)
+await bot.sendPhoto(chatId, 'https://example.com/image.png');
+
+// ۳. با مسیر فایل محلی (آپلود خودکار به صورت multipart/form-data)
+await bot.sendPhoto(chatId, './images/banner.jpg', { caption: 'آپلود محلی' });
+
+// ۴. با بافر حافظه (Buffer)
+const buffer = fs.readFileSync('./chart.png');
+await bot.sendPhoto(chatId, buffer, { caption: 'تصویر داینامیک' });
+
+// ارسال سایر رسانه‌ها
+await bot.sendAudio(chatId, './track.mp3', { performer: 'بله', title: 'آهنگ' });
+await bot.sendDocument(chatId, './doc.pdf');
+await bot.sendVideo(chatId, './video.mp4', { duration: 60 });
+await bot.sendVoice(chatId, './voice.ogg');
+await bot.sendAnimation(chatId, './anim.gif');
+await bot.sendLocation(chatId, 35.7219, 51.3347);
+await bot.sendContact(chatId, '+989123456789', 'پشتیبانی');
+await bot.sendChatAction(chatId, 'upload_photo');
+```
+
+### مدیریت گروه‌ها، اعضا و لینک‌های دعوت
+```javascript
+// دریافت اطلاعات و اعضا
+const chat = await bot.getChat(groupId);
+const count = await bot.getChatMembersCount(groupId);
+const admins = await bot.getChatAdministrators(groupId);
+
+// اخراج، رفع اخراج و ارتقا به ادمین
+await bot.banChatMember(groupId, userId);
+await bot.unbanChatMember(groupId, userId);
+await bot.promoteChatMember(groupId, userId, { can_delete_messages: true });
+
+// تنظیمات گروه و سنجاق پیام
+await bot.setChatTitle(groupId, 'گروه برنامه‌نویسان بله');
+await bot.setChatDescription(groupId, 'توسعه بازو و مینی‌اپ');
+await bot.pinChatMessage(groupId, messageId);
+await bot.unpinChatMessage(groupId, messageId);
+
+// لینک‌های دعوت
+const invite = await bot.createChatInviteLink(groupId);
+await bot.revokeChatInviteLink(groupId, invite.invite_link);
+```
+
+### متد اختصاصی دریافت امتیاز و نظر کاربر (askReview)
+```javascript
+// باز کردن پنجره بومی دریافت امتیاز و ثبت نظر در کلاینت بله کاربر
+await bot.askReview(chatId);
 ```
 
 ### پرداخت و کیف‌پول الکترونیکی بله (Electronic Wallet Invoices)
@@ -1206,6 +1271,9 @@ bot.on('pre_checkout_query', async (query) => {
 bot.on('successful_payment', async (payment, msg) => {
   console.log('پرداخت تایید شد:', payment.total_amount, payment.invoice_payload);
 });
+
+// استعلام وضعیت تراکنش
+const tx = await bot.inquireTransaction('transaction_id_here');
 ```
 
 ### استقرار به صورت وب‌هوک (Webhook)
@@ -1222,6 +1290,18 @@ http.createServer((req, res) => {
   res.writeHead(404).end();
 }).listen(443);
 ```
+
+### کاتالوگ جامع ۶۲ متد رسمی BaleBot (docs.bale.ai)
+| دسته‌بندی | متدها |
+| :--- | :--- |
+| **چرخه حیات و وب‌هوک** | `getMe()`, `logout()`, `close()`, `getUpdates(opts)`, `setWebhook(opts)`, `deleteWebhook()`, `getWebhookInfo()`, `startPolling(opts)`, `stopPolling()`, `createWebhookMiddleware(opts)` |
+| **پیام‌ها و چندرسانه‌ای** | `sendMessage(chatId, text, opts)`, `forwardMessage(chatId, fromChatId, msgId)`, `copyMessage(chatId, fromChatId, msgId, opts)`, `sendPhoto(chatId, photo, opts)`, `sendAudio(chatId, audio, opts)`, `sendDocument(chatId, doc, opts)`, `sendVideo(chatId, video, opts)`, `sendAnimation(chatId, anim, opts)`, `sendVoice(chatId, voice, opts)`, `sendMediaGroup(chatId, media)`, `sendLocation(chatId, lat, lon, opts)`, `sendContact(chatId, phone, name, opts)`, `sendChatAction(chatId, action)`, `getFile(fileId)`, `downloadFile(fileId, dest)` |
+| **دکمه‌ها و تعامل** | `answerCallbackQuery(id, opts)`, `askReview(chatId)` (پاپ‌آپ نظرخواهی اختصاصی بله) |
+| **ویرایش و حذف** | `editMessageText(chatId, msgId, text, opts)`, `editMessageCaption(chatId, msgId, cap, opts)`, `editMessageReplyMarkup(chatId, msgId, kb)`, `deleteMessage(chatId, msgId)`, `deleteMessages(chatId, msgIds)` |
+| **مدیریت چت و اعضا** | `getChat(chatId)`, `getChatAdministrators(chatId)`, `getChatMembersCount(chatId)`, `getChatMember(chatId, userId)`, `banChatMember(chatId, userId)`, `unbanChatMember(chatId, userId)`, `promoteChatMember(chatId, userId, opts)`, `setChatPhoto(chatId, photo)`, `deleteChatPhoto(chatId)`, `setChatTitle(chatId, title)`, `setChatDescription(chatId, desc)`, `pinChatMessage(chatId, msgId)`, `unpinChatMessage(chatId, msgId)`, `unPinChatMessage(chatId, msgId)`, `unpinAllChatMessages(chatId)`, `leaveChat(chatId)`, `createChatInviteLink(chatId)`, `revokeChatInviteLink(chatId, link)`, `exportChatInviteLink(chatId)` |
+| **استیکرها** | `uploadStickerFile(userId, png)`, `createNewStickerSet(userId, name, title, png, emojis)`, `addStickerToSet(userId, name, png, emojis)` |
+| **پرداخت و کیف‌پول** | `sendInvoice(chatId, title, desc, payload, token, curr, prices, opts)`, `createInvoiceLink(title, desc, payload, token, curr, prices, opts)`, `answerPreCheckoutQuery(queryId, ok, errMsg)`, `inquireTransaction(transactionId)` |
+| **متدهای کمکی** | `call(method, params, files)`, `getMethodUrl(method)`, `getFileUrl(filePath)` |
 
 ---
 
