@@ -22,8 +22,8 @@ class BaleConnection extends EventEmitter {
   constructor(options = {}) {
     super();
     this.options = Object.assign({
-      endpoint: 'wss://next-ws.bale.ai/ws/',
-      apiVersion: 171248,
+      endpoint: 'wss://maviz-ws.bale.ai/ws/',
+      apiVersion: 173855,
       protocolVersion: 1,
       pingInterval: 10000,
       pingTimeout: 5000,
@@ -42,6 +42,39 @@ class BaleConnection extends EventEmitter {
     this.reconnectTimer = null;
     this.reconnectAttempts = 0;
     this.closedExplicitly = false;
+    // Consecutive 4401 (unauthenticated) closes. After the threshold we stop the
+    // reconnect loop instead of hammering the gateway forever.
+    this.unauthStreak = 0;
+    // Guard so the fatal "re-authenticate" error is emitted only once per streak.
+    this.unauthFatalEmitted = false;
+  }
+
+  /**
+   * Build the credential cookies required by the Bale gateway.
+   *
+   * The official web client runs with `saveToken: false` and
+   * `CrossBrowserHttpTransport({ withCredentials: true })`, i.e. it never sends
+   * the JWT as a header - the gateway authenticates the `access_token` cookie.
+   * Verified empirically: with `Cookie: access_token=<jwt>` every auth-gated
+   * method returns HTTP 200 (GetAuthSessions -> 1127 bytes, grpc-status 0).
+   * Without it the gateway answers HTTP 401 with an empty body.
+   * @returns {string} Cookie header value, or '' when there is no credential.
+   */
+  _buildCookieHeader() {
+    const cookies = [];
+    const token = this.session && this.session.token;
+
+    if (token) {
+      cookies.push(`access_token=${token}`);
+      // Mirrors of the credential used by some Bale gateway deployments.
+      cookies.push(`token_bale=${token}`);
+    }
+
+    if (this.session && this.session.userId) {
+      cookies.push(`uid=${this.session.userId}`);
+    }
+
+    return cookies.join('; ');
   }
 
   get isConnected() {
@@ -72,19 +105,31 @@ class BaleConnection extends EventEmitter {
 
       try {
         // Handle options differences between native WebSocket and ws
-        const wsOpts = {
-          headers: {
-            'Origin': this.options.origin,
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
-          }
+        const headers = {
+          'Origin': this.options.origin,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
         };
 
-        // If native WebSocket accepts 2nd arg as protocols
-        try {
-          this.ws = new WS(url, wsOpts);
-        } catch (_) {
-          this.ws = new WS(url);
+        const cookie = this._buildCookieHeader();
+        if (cookie) headers['Cookie'] = cookie;
+
+        // Both `ws` (options as 2nd arg) and Node's native/undici WebSocket
+        // (options as 3rd arg) support a `headers` bag, but the arity differs.
+        this.ws = null;
+        let lastErr = null;
+        for (const args of [
+          [url, { headers }],
+          [url, [], { headers }],
+          [url]
+        ]) {
+          try {
+            this.ws = new WS(...args);
+            if (this.ws) break;
+          } catch (e) {
+            lastErr = e;
+          }
         }
+        if (!this.ws) throw lastErr || new Error('Failed to create WebSocket');
 
         if (this.ws.binaryType !== undefined) {
           this.ws.binaryType = 'arraybuffer';
@@ -153,10 +198,26 @@ class BaleConnection extends EventEmitter {
         reject(new Error('Handshake timeout with Bale server'));
       }, 8000);
 
+      // If the gateway rejects the credential it closes with 4401 straight
+      // away. Surface that immediately instead of waiting out the full timeout.
+      const onEarlyUnauth = () => {
+        clearTimeout(timeout);
+        const err = new Error(
+          'Unauthenticated: Bale server rejected the WebSocket credential (close code 4401). ' +
+          'Re-authenticate with sendCode()/signIn().'
+        );
+        err.code = 4401;
+        reject(err);
+      };
+      this.once('unauthenticated', onEarlyUnauth);
+
       this.once('_handshake_done', (res) => {
         clearTimeout(timeout);
+        this.removeListener('unauthenticated', onEarlyUnauth);
         this.state = 'connected';
         this.reconnectAttempts = 0;
+        this.unauthStreak = 0;
+        this.unauthFatalEmitted = false;
         this.emit('status', 'connected');
         this.emit('connected', res);
         this._startHeartbeat();
@@ -231,6 +292,61 @@ class BaleConnection extends EventEmitter {
     this._stopHeartbeat();
     const wasConnected = this.state === 'connected';
     this.state = 'disconnected';
+
+    // WebSocket close code 4401 == unauthenticated (gateway rejected our
+    // credential on the upgrade request). This is not a transient failure, so
+    // reconnecting blindly just loops forever behind the 8 s handshake timeout.
+    const closeCode = event && (event.code !== undefined ? event.code : undefined);
+    const isUnauthenticated = closeCode === 4401 || (event && event.reason && /4401|unauthenticated/i.test(String(event.reason)));
+
+    if (isUnauthenticated) {
+      this.unauthStreak++;
+      this.emit('status', 'disconnected');
+      this.emit('disconnected', event);
+      this.emit('unauthenticated', {
+        code: 4401,
+        message: 'Bale server rejected the session credential (close code 4401)'
+      });
+
+      // Reject every in-flight request right away - none of them can be answered
+      // now that the gateway has rejected our credential.
+      for (const [idx, { reject, timer }] of this.pendingRequests.entries()) {
+        clearTimeout(timer);
+        reject(new Error('Connection closed before response was received (unauthenticated, close code 4401)'));
+      }
+      this.pendingRequests.clear();
+
+      const threshold = this.options.maxUnauthenticatedRetries !== undefined
+        ? this.options.maxUnauthenticatedRetries
+        : 3;
+
+      // A 4401 is not a transient network fault: reconnecting blindly just loops
+      // forever behind the 8 s handshake timeout. We allow a bounded number of
+      // retries (the token may simply have expired mid-flight), then stop and
+      // surface one actionable error.
+      if (this.unauthStreak >= threshold) {
+        this.closedExplicitly = true;
+        this.reconnectTimer = null;
+
+        if (!this.unauthFatalEmitted) {
+          this.unauthFatalEmitted = true;
+          const err = new Error(
+            `Unauthenticated: Bale server closed the connection with code 4401 ${this.unauthStreak} time(s). ` +
+            'The session token is missing, expired or not accepted. Re-authenticate with sendCode()/signIn().'
+          );
+          err.code = 4401;
+          this.emit('error', err);
+        }
+        return;
+      }
+
+      // Still under the threshold - a single bounded retry is worth trying.
+      if (this.options.autoReconnect && !this.closedExplicitly) {
+        this._scheduleReconnect();
+      }
+      return;
+    }
+
     this.emit('status', 'disconnected');
     this.emit('disconnected', event);
 
@@ -287,29 +403,26 @@ class BaleConnection extends EventEmitter {
 
     const index = ++this.reqIndex;
 
-    // Construct headers identical to official Bale Web Client
+    // Construct headers identical to official Bale Web Client.
+    // Note: no `token`/`mt_token` here - the official client sends none; the
+    // credential travels as the `access_token` cookie on the upgrade request.
     const nowStr = String(Date.now());
-    const apiVer = String(this.options.apiVersion || 171248);
+    const apiVer = String(this.options.apiVersion || 173855);
 
     const metadata = {
       app_version: apiVer,
       browser_type: '1',
-      browser_version: '128.0.0.0',
+      browser_version: '131.0.0.0',
       os_type: '5',
       session_id: nowStr,
       language: 'fa',
       mt_app_version: apiVer,
       mt_browser_type: '1',
-      mt_browser_version: '128.0.0.0',
+      mt_browser_version: '131.0.0.0',
       mt_os_type: '5',
       mt_session_id: nowStr,
       ...customMetadata
     };
-
-    if (this.session && this.session.token) {
-      metadata.token = this.session.token;
-      metadata.mt_token = this.session.token;
-    }
 
     const reqFrame = Proto.encodeClientMessage({
       request: {

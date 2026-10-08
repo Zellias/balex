@@ -697,7 +697,9 @@ export interface SendMessageOptions {
  */
 export interface SentMessageResult {
   rid: string;
-  date: bigint | number;
+  date: number;
+  /** Server-assigned monotonic message counter. */
+  messageId: number;
   peer: Peer;
   text: string;
   [key: string]: any;
@@ -1600,9 +1602,25 @@ export class BaleClient extends EventEmitter {
   removeContact(userId: number | string, accessHash?: bigint | number | string): Promise<any>;
 
   /**
-   * Search contacts by name or query string.
+   * Search contacts by name or query string. Also resolves public usernames.
    */
-  searchContacts(query: string): Promise<User[]>;
+  searchContacts(query: string): Promise<{
+    users: User[];
+    userPeers: Array<{ userId: number; accessHash: bigint }>;
+    groups: any[];
+    groupPeers: Array<{ userId: number; accessHash: bigint }>;
+  }>;
+
+  /**
+   * Resolve a peer target to a `{ type, id, accessHash }` triple.
+   *
+   * Accepts a numeric peer/user id (returned as-is) or a public username
+   * such as `some_username` / `@some_username`, which is resolved through
+   * `bale.users.v1.Users/SearchContacts`.
+   *
+   * @throws if the username matches no user or group.
+   */
+  resolvePeer(target: number | string): Promise<Peer & { accessHash?: bigint }>;
 
   /**
    * Edit user profile display name.

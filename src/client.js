@@ -33,7 +33,9 @@ class BaleClient extends EventEmitter {
     super();
     this.miniapp = MiniAppUtils;
     this.options = Object.assign({
-      endpoint: 'wss://next-ws.bale.ai/ws/',
+      endpoint: 'wss://maviz-ws.bale.ai/ws/',
+      grpcEndpoint: 'https://maviz-ws.bale.ai',
+      apiVersion: 173855,
       session: null,
       autoReconnect: true,
       stealth: true
@@ -161,33 +163,38 @@ class BaleClient extends EventEmitter {
     requestBytes.copy(frame, 5);
 
     const nowStr = String(Date.now());
-    const apiVer = String(this.options.apiVersion || 171248);
+    const apiVer = String(this.options.apiVersion || 173855);
 
     const headers = {
       'Content-Type': 'application/grpc-web+proto',
       'Accept': 'application/grpc-web+proto',
       'x-grpc-web': '1',
       'Origin': 'https://web.bale.ai',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
       'app_version': apiVer,
       'browser_type': '1',
-      'browser_version': '128.0.0.0',
+      'browser_version': '131.0.0.0',
       'os_type': '5',
       'session_id': nowStr,
       'language': 'fa',
       'mt_app_version': apiVer,
       'mt_browser_type': '1',
-      'mt_browser_version': '128.0.0.0',
+      'mt_browser_version': '131.0.0.0',
       'mt_os_type': '5',
       'mt_session_id': nowStr,
       'mt_language': 'fa',
       ...customHeaders
     };
 
+    // Authentication is cookie-based: the Bale gateway reads the `access_token`
+    // cookie. The official web client runs with saveToken:false and
+    // withCredentials:true, so it never sends the JWT as a header - requests
+    // without this cookie are rejected with a bare HTTP 401 and empty body.
     if (this.session && this.session.token) {
-      headers['token'] = this.session.token;
-      headers['mt_token'] = this.session.token;
-      headers['authorization'] = `Bearer ${this.session.token}`;
+      headers['Cookie'] = `access_token=${this.session.token}; token_bale=${this.session.token}`;
+      if (this.session.userId) {
+        headers['Cookie'] += `; uid=${this.session.userId}`;
+      }
     }
 
     let lastError = null;
@@ -223,6 +230,20 @@ class BaleClient extends EventEmitter {
           const err = new Error(grpcMessage ? decodeURIComponent(grpcMessage) : `gRPC Error ${grpcStatus}`);
           err.code = grpcStatus;
           err.grpcMessage = grpcMessage;
+          throw err;
+        }
+
+        // HTTP-level failures (e.g. 401 from the gateway when the credential is
+        // missing or rejected) carry an empty body, so without this check they
+        // would be silently reported as an empty successful response.
+        if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
+          const err = new Error(
+            res.statusCode === 401
+              ? 'Unauthenticated (HTTP 401): the Bale gateway rejected the session credential. Re-authenticate with sendCode()/signIn().'
+              : `HTTP ${res.statusCode} from ${base}${serviceName}/${methodName}`
+          );
+          err.code = 'HTTP_' + res.statusCode;
+          err.statusCode = res.statusCode;
           throw err;
         }
 
@@ -420,7 +441,11 @@ class BaleClient extends EventEmitter {
     const res = Proto.decodeSendMessageResponse(resBytes);
     return {
       rid,
-      date: res.date,
+      // Server timestamp in milliseconds; surfaced as a plain number so callers
+      // can do date arithmetic without tripping over BigInt.
+      date: Number(res.date),
+      // Server-assigned counter (see decodeSendMessageResponse).
+      messageId: Number(res.messageId),
       peer: peerObj,
       text
     };
@@ -1036,18 +1061,46 @@ class BaleClient extends EventEmitter {
   }
 
   /**
-   * Search saved contacts.
+   * Search users by name / username. Works for both saved contacts and
+   * public usernames (e.g. `some_username`); returns `{ users, userPeers, groups, groupPeers }`.
    * @param {string} query
    */
   async searchContacts(query) {
     const payload = Proto.encodeSearchContacts(query);
     const resBytes = await this.connection.sendRequest('bale.users.v1.Users', 'SearchContacts', payload);
-    return Proto.decodeBySchema(resBytes, {
-      fields: [
-        { tag: 1, name: 'users', type: 'message', isRepeated: true },
-        { tag: 2, name: 'userPeers', type: 'message', isRepeated: true }
-      ]
-    });
+    return Proto.decodeSearchContactsResponse(resBytes);
+  }
+
+  /**
+   * Resolve a peer target to a `{ type, id }` pair.
+   *
+   * Accepts either a numeric peer/user id (returned as-is) or a public
+   * username such as `some_username` / `@some_username`, which is resolved through
+   * `bale.users.v1.Users/SearchContacts`.
+   *
+   * @param {number|string} target numeric id or public username
+   * @returns {Promise<{ type: number, id: number }>}
+   */
+  async resolvePeer(target) {
+    const raw = String(target).trim().replace(/^@/, '');
+    if (!raw) throw new Error('resolvePeer: empty target');
+    if (/^\d+$/.test(raw)) {
+      const id = Number(raw);
+      return { type: ExPeerType.PRIVATE, id };
+    }
+
+    const res = await this.searchContacts(raw);
+    const userPeers = (res && res.userPeers) || [];
+    const groupPeers = (res && res.groupPeers) || [];
+    const found = userPeers.find(p => p && p.userId) || groupPeers.find(p => p && p.userId) || null;
+    if (!found) {
+      throw new Error(`resolvePeer: no user or group found for "${raw}"`);
+    }
+    return {
+      type: ExPeerType.PRIVATE,
+      id: Number(found.userId),
+      accessHash: BigInt(found.accessHash || 0n)
+    };
   }
 
   // ==========================================

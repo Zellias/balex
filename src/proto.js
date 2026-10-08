@@ -321,7 +321,7 @@ const Proto = {
   encodeHandshakeRequest(req = {}) {
     const w = new ProtoWriter();
     w.writeInt32(1, req.mkprotoVersion || 1);
-    w.writeInt64(2, req.apiVersion || 171248);
+    w.writeInt64(2, req.apiVersion || 173855);
     return w.finish();
   },
 
@@ -823,11 +823,19 @@ const Proto = {
 
   decodeSendMessageResponse(buf) {
     const r = new ProtoReader(buf);
-    const res = { date: 0n, rid: 0n };
+    // Wire layout verified against the live gateway with three consecutive sends:
+    //   f1 = server-assigned monotonic message counter (5807, 5809, 5811 …)
+    //   f2 = server timestamp in milliseconds        (~1.79e12, tracks Date.now())
+    //   f4 = repeated previous-message metadata, keyed by name:
+    //        previous_message_rid / previous_message_date
+    // Reading `date` from f1 gave epoch-1970 timestamps for every message, so the
+    // two fields had been swapped. The message id is the rid we supplied in the
+    // request, not the counter, so only `date` is taken from the wire.
+    const res = { date: 0n, rid: 0n, messageId: 0n };
     while (r.hasMore()) {
       const { fieldNumber, wireType } = r.readTag();
-      if (fieldNumber === 1) res.date = r.readVarint();
-      else if (fieldNumber === 2) res.rid = r.readVarint();
+      if (fieldNumber === 2) res.date = r.readVarint();
+      else if (fieldNumber === 1) res.messageId = r.readVarint();
       else r.skip(wireType);
     }
     return res;
@@ -1113,6 +1121,41 @@ const Proto = {
     const w = new ProtoWriter();
     w.writeString(1, String(query));
     return w.finish();
+  },
+
+  /**
+   * `UserPeer { user_id = 1, access_hash = 2 }`
+   * NOTE: this is NOT the same layout as `ExPeer { type = 1, id = 2 }`.
+   * Several responses (SearchContacts, ImportContacts, GetContacts) carry
+   * UserPeer, so decoding them with `decodePeer` silently swaps id and hash.
+   */
+  decodeUserPeer(buf) {
+    const r = new ProtoReader(buf);
+    const p = { userId: 0, accessHash: 0n };
+    while (r.hasMore()) {
+      const { fieldNumber, wireType } = r.readTag();
+      if (fieldNumber === 1) p.userId = Number(r.readVarint());
+      else if (fieldNumber === 2) p.accessHash = r.readVarint();
+      else r.skip(wireType);
+    }
+    return p;
+  },
+
+  decodeSearchContactsResponse(buf) {
+    const out = { users: [], userPeers: [], groups: [], groupPeers: [] };
+    if (!buf || buf.length === 0) return out;
+    const r = new ProtoReader(buf);
+    while (r.hasMore()) {
+      const { fieldNumber, wireType } = r.readTag();
+      if (wireType !== WIRE_BYTES) { r.skip(wireType); continue; }
+      const len = Number(r.readVarint());
+      const sub = r.readBytes(len);
+      if (fieldNumber === 1) out.users.push(Proto.decodeUser(sub));
+      else if (fieldNumber === 2) out.userPeers.push(Proto.decodeUserPeer(sub));
+      else if (fieldNumber === 4) out.groups.push(sub);
+      else if (fieldNumber === 5) out.groupPeers.push(Proto.decodeUserPeer(sub));
+    }
+    return out;
   },
 
   encodeEditName(name) {
