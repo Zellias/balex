@@ -47,7 +47,7 @@ Triggers an official 5-digit SMS OTP from Bale.
   - `Field 2 (int32)`: `appId = 4` (Official Bale Web client ID).
   - `Field 3 (string)`: Web API Key (`C28D46DC4C3A7A26564BFCC48B929086A95C93C98E789A19847BEE8627DE4E7D`).
   - `Field 4 (bytes)`: Device random hash (16 random bytes).
-  - `Field 5 (string)`: Device title (e.g., `'BaleX Desktop'`).
+  - `Field 5 (string)`: Device title (default `'BaleX'`). Bale shows this in the account's active-devices list. Override via `new BaleClient({ deviceTitle })` or `client.sendCode(phone, { deviceTitle })`. Captured once per `deviceHash`.
 - **Response Schema**:
   - `Field 1 (string)`: `transactionHash` (Required for subsequent validation calls).
 

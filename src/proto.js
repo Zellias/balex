@@ -874,7 +874,7 @@ const Proto = {
   },
 
   // Auth RPC Models
-  encodeStartPhoneAuth({ phoneNumber, deviceTitle = 'BaleX Desktop', appId = 4, apiKey = 'C28D46DC4C3A7A26564BFCC48B929086A95C93C98E789A19847BEE8627DE4E7D', deviceHash = null }) {
+  encodeStartPhoneAuth({ phoneNumber, deviceTitle = 'BaleX', appId = 4, apiKey = 'C28D46DC4C3A7A26564BFCC48B929086A95C93C98E789A19847BEE8627DE4E7D', deviceHash = null }) {
     const phoneBigInt = typeof phoneNumber === 'bigint' ? phoneNumber : Proto.normalizePhoneNumber(phoneNumber);
     const hashBytes = Buffer.isBuffer(deviceHash)
       ? deviceHash

@@ -13,7 +13,13 @@ async function main() {
   console.log('=== Bale Userbot Login ===\n');
 
   const session = new FileSession('./session.json');
-  const client = new BaleClient({ session });
+  const client = new BaleClient({
+    session,
+    // Device name Bale shows in the account's active-devices list.
+    // Edit this to whatever you want it to read as.
+    deviceTitle: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:157.0) Gecko/20100101 Firefox/157.0',
+  });
+
 
   client.on('status', (st) => console.log(`[Connection Status] ${st}`));
   client.on('error', (err) => console.error(`[Connection Error]`, err.message));

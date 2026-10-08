@@ -1133,6 +1133,11 @@ export interface BaleClientOptions {
   autoReconnect?: boolean;
   stealth?: boolean;
   humanize?: boolean | HumanizeConfig;
+  /**
+   * Device name Bale shows in the account's active-devices list.
+   * Captured once, when `sendCode()` runs. Defaults to `'BaleX'`.
+   */
+  deviceTitle?: string;
 }
 
 // ==========================================
@@ -1377,8 +1382,12 @@ export class BaleClient extends EventEmitter {
   /**
    * Request an SMS verification code for a phone number.
    * @param phoneNumber Phone number in international format, e.g. "+989123456789"
+   * @param options Optional overrides
+   * @param options.deviceTitle Device name shown in Bale's active-devices list.
+   *   Defaults to the constructor's `deviceTitle` option ('BaleX').
+   *   Only takes effect on a fresh `deviceHash`.
    */
-  sendCode(phoneNumber: string): Promise<{ transactionHash: string }>;
+  sendCode(phoneNumber: string, options?: { deviceTitle?: string }): Promise<{ transactionHash: string }>;
 
   /**
    * Validate SMS code and sign in.

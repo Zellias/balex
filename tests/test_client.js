@@ -210,6 +210,98 @@ async function testClient() {
     console.log('  ✅ Per-message humanize override verified ({ humanize: false })');
   }
 
+  // 7. deviceTitle: the device name Bale shows in the active-devices list
+  {
+    // Decode protobuf field 5 (deviceTitle) straight off the wire, so we
+    // test what is actually sent rather than trusting the encoder.
+    function readTitle(buf) {
+      let pos = 0;
+      let title = null;
+      let hashLen = null;
+      const readVarint = () => {
+        let val = 0n;
+        let shift = 0n;
+        for (;;) {
+          const b = buf[pos++];
+          val |= BigInt(b & 0x7f) << shift;
+          if ((b & 0x80) === 0) break;
+          shift += 7n;
+        }
+        return val;
+      };
+      while (pos < buf.length) {
+        const tag = buf[pos++];
+        const field = tag >> 3;
+        const wire = tag & 7;
+        if (wire === 0) { readVarint(); continue; }
+        let len = 0, shift = 0;
+        for (;;) {
+          const b = buf[pos++];
+          len |= (b & 0x7f) << shift;
+          if ((b & 0x80) === 0) break;
+          shift += 7;
+        }
+        const data = buf.slice(pos, pos + len);
+        pos += len;
+        if (field === 4) hashLen = len;
+        else if (field === 5) title = data.toString('utf8');
+      }
+      return { title, hashLen };
+    }
+
+    function clientCapturing(options) {
+      const session = new StringSession();
+      const c = new BaleClient(Object.assign({ session }, options));
+      let captured = null;
+      c.callGrpcUnary = async (_s, _m, bytes) => {
+        captured = bytes;
+        const w = new Proto.ProtoWriter();
+        w.writeString(1, 'tx_test');
+        return w.finish();
+      };
+      return { c, bytes: () => captured };
+    }
+
+    // Default must be the new 'BaleX', not the old 'BaleX Desktop'.
+    {
+      const { c, bytes } = clientCapturing();
+      await c.sendCode('+989120000000');
+      const d = readTitle(bytes());
+      assert.strictEqual(d.title, 'BaleX');
+      assert.strictEqual(d.hashLen, 16);
+    }
+
+    // Constructor option is honoured.
+    {
+      const { c, bytes } = clientCapturing({ deviceTitle: 'My Laptop' });
+      await c.sendCode('+989120000000');
+      assert.strictEqual(readTitle(bytes()).title, 'My Laptop');
+    }
+
+    // Per-call option beats the constructor option.
+    {
+      const { c, bytes } = clientCapturing({ deviceTitle: 'My Laptop' });
+      await c.sendCode('+989120000000', { deviceTitle: 'One-off' });
+      assert.strictEqual(readTitle(bytes()).title, 'One-off');
+    }
+
+    // An empty string must not blank the field; it falls back.
+    {
+      const { c, bytes } = clientCapturing({ deviceTitle: 'My Laptop' });
+      await c.sendCode('+989120000000', { deviceTitle: '' });
+      assert.strictEqual(readTitle(bytes()).title, 'My Laptop');
+    }
+
+    // RTL titles survive the UTF-8 round trip.
+    {
+      const { c, bytes } = clientCapturing({ deviceTitle: 'لپ‌تاپ من' });
+      await c.sendCode('+989120000000');
+      assert.strictEqual(readTitle(bytes()).title, 'لپ‌تاپ من');
+    }
+
+    console.log('  ✅ deviceTitle precedence verified (default / constructor / per-call / empty / RTL)');
+  }
+
   console.log('\nAll Client tests passed! ✨');
 }
 
